@@ -30,26 +30,26 @@ import { EngineeringChatDrawer } from './EngineeringChatDrawer';
 // ---- Navigation items ----
 
 const NAV_ITEMS = [
-  { path: '/library', label: 'Engineering Library', icon: Library },
-  { path: '/compare', label: 'Reuse & Comparison', icon: GitCompare },
-  { path: '/cad-change', label: 'CAD Change Centre', icon: Settings2 },
-  { path: '/main-assembly', label: 'Main Assembly', icon: Layers, highlight: true, badge: '10' },
-  { path: '/review', label: 'Review & Release', icon: CheckSquare },
-  { path: '/history', label: 'Activity History', icon: History },
-  { path: '/enquiries', label: 'Project Brief', icon: FileText },
+  { path: '/enquiries', label: '1. Requirements Brief', icon: FileText, step: '1' },
+  { path: '/library', label: '2. Engineering Library', icon: Library, step: '2' },
+  { path: '/compare', label: '3. Reuse & Comparison', icon: GitCompare, step: '3' },
+  { path: '/cad-change', label: '4. CAD Change Centre', icon: Settings2, step: '4' },
+  { path: '/main-assembly', label: '5. Main Assembly', icon: Layers, highlight: true, badge: '10 Assys', step: '5' },
+  { path: '/review', label: '6. Review & Release', icon: CheckSquare, step: '6' },
+  { path: '/history', label: '7. Activity History', icon: History, step: '7' },
 ];
 
 // ---- Breadcrumb mapping ----
 
 const ROUTE_BREADCRUMBS: Record<string, string[]> = {
-  '/library': ['VOLM Engineering Intelligence', 'Engineering Library'],
-  '/compare': ['VOLM Engineering Intelligence', 'Reuse & Comparison (10 Assemblies)'],
-  '/reuse-comparison': ['VOLM Engineering Intelligence', 'Reuse & Comparison (10 Assemblies)'],
-  '/cad-change': ['VOLM Engineering Intelligence', 'CAD Change Centre'],
-  '/main-assembly': ['VOLM Engineering Intelligence', 'Main Assembly (Master Skid Coordination)'],
-  '/review': ['VOLM Engineering Intelligence', 'Engineering Validation & Release'],
-  '/history': ['VOLM Engineering Intelligence', 'Activity History'],
-  '/enquiries': ['VOLM Engineering Intelligence', 'Project Brief & Specifications'],
+  '/enquiries': ['VOLM Engineering Intelligence', '1. Customer Requirements & Project Brief'],
+  '/library': ['VOLM Engineering Intelligence', '2. Engineering Library (Parts & Assemblies)'],
+  '/compare': ['VOLM Engineering Intelligence', '3. Component Reuse & Comparison (10 Assemblies)'],
+  '/reuse-comparison': ['VOLM Engineering Intelligence', '3. Component Reuse & Comparison (10 Assemblies)'],
+  '/cad-change': ['VOLM Engineering Intelligence', '4. CAD Change Centre (Parametric Rebuilds)'],
+  '/main-assembly': ['VOLM Engineering Intelligence', '5. Main Assembly (Master Skid Integration)'],
+  '/review': ['VOLM Engineering Intelligence', '6. Engineering Validation & Release'],
+  '/history': ['VOLM Engineering Intelligence', '7. Traceability & Activity History'],
 };
 
 // ---- Shell Layout ----

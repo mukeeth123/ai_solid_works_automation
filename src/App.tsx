@@ -32,7 +32,8 @@ function App() {
         <AppShell>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
-              <Route path="/" element={<Navigate to="/library" replace />} />
+              <Route path="/" element={<Navigate to="/enquiries" replace />} />
+              <Route path="/enquiries" element={<EnquiryWorkspace />} />
               <Route path="/library" element={<EngineeringLibrary />} />
               <Route path="/compare" element={<ComparePlan />} />
               <Route path="/reuse-comparison" element={<ComparePlan />} />
@@ -40,8 +41,7 @@ function App() {
               <Route path="/main-assembly" element={<MainAssembly />} />
               <Route path="/review" element={<ReviewRelease />} />
               <Route path="/history" element={<ActivityHistory />} />
-              <Route path="/enquiries" element={<EnquiryWorkspace />} />
-              <Route path="*" element={<Navigate to="/library" replace />} />
+              <Route path="*" element={<Navigate to="/enquiries" replace />} />
             </Routes>
           </Suspense>
         </AppShell>
