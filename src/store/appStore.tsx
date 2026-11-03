@@ -19,6 +19,9 @@ import type {
   ID,
   ApprovalStatus,
   ExecutionStatus,
+  MainAssemblyItem,
+  MainAssemblyMate,
+  MainAssemblyValidation,
 } from '../types/engineering';
 import {
   DEMO_ENQUIRIES,
@@ -26,6 +29,7 @@ import {
   DEMO_ASSEMBLIES,
   DEMO_SUB_ASSEMBLIES,
   DEMO_COMPARISON,
+  DEMO_ALL_EQUIPMENT_COMPARISONS,
   DEMO_CHANGES,
   DEMO_EXECUTIONS,
   DEMO_BOM,
@@ -33,6 +37,9 @@ import {
   DEMO_AUDIT,
   DEMO_DATA_SOURCES,
   DEMO_INTEGRATIONS,
+  DEMO_MAIN_ASSEMBLY_ITEMS,
+  DEMO_MAIN_ASSEMBLY_MATES,
+  DEMO_MAIN_ASSEMBLY_VALIDATION,
 } from '../data/sampleData';
 
 // ---- State Shape ----
@@ -43,6 +50,7 @@ export interface StoreState {
   files: EngineeringFile[];
   assemblies: Assembly[];
   comparisonResults: ComparisonResult[];
+  equipmentComparisons: Record<string, ComparisonResult>;
   proposedChanges: ProposedChange[];
   executions: CADExecution[];
   boms: BOM[];
@@ -50,6 +58,12 @@ export interface StoreState {
   auditEvents: AuditEvent[];
   dataSources: DataSource[];
   integrations: IntegrationStatus[];
+
+  // Main Assembly Workspace
+  mainAssemblyItems: MainAssemblyItem[];
+  mainAssemblyMates: MainAssemblyMate[];
+  mainAssemblyValidation: MainAssemblyValidation;
+  selectedMainAssemblyItemId?: ID;
 
   // Navigation / selection context
   activeEnquiryId?: ID;
@@ -74,6 +88,7 @@ export type StoreAction =
   | { type: 'SET_ACTIVE_EXECUTION'; id?: ID }
   | { type: 'SET_ACTIVE_REVIEW'; id?: ID }
   | { type: 'SET_ACTIVE_BOM'; id?: ID }
+  | { type: 'SET_MAIN_ASSEMBLY_ITEM_SELECTION'; id?: ID }
   | { type: 'UPSERT_ENQUIRY'; enquiry: Enquiry }
   | { type: 'UPDATE_REQUIREMENT'; enquiryId: ID; requirement: Requirement }
   | { type: 'ADD_REQUIREMENT'; enquiryId: ID; requirement: Requirement }
@@ -88,6 +103,9 @@ export type StoreAction =
   | { type: 'UPSERT_BOM'; bom: BOM }
   | { type: 'UPSERT_REVIEW'; review: EngineeringReview }
   | { type: 'ADD_AUDIT_EVENT'; event: AuditEvent }
+  | { type: 'UPDATE_MAIN_ASSEMBLY_ITEM'; item: Partial<MainAssemblyItem> & { id: ID } }
+  | { type: 'RUN_MAIN_ASSEMBLY_VALIDATION' }
+  | { type: 'TRIGGER_ASSEMBLY_REBUILD'; assemblyId: ID }
   | { type: 'RESET_DEMO' }
   | { type: 'IMPORT_FILES'; files: EngineeringFile[] };
 
@@ -103,6 +121,7 @@ const initialState: StoreState = {
   files: allFiles,
   assemblies: [...DEMO_ASSEMBLIES, ...DEMO_SUB_ASSEMBLIES],
   comparisonResults: [DEMO_COMPARISON],
+  equipmentComparisons: DEMO_ALL_EQUIPMENT_COMPARISONS,
   proposedChanges: DEMO_CHANGES,
   executions: DEMO_EXECUTIONS,
   boms: [DEMO_BOM],
@@ -110,14 +129,20 @@ const initialState: StoreState = {
   auditEvents: DEMO_AUDIT,
   dataSources: DEMO_DATA_SOURCES,
   integrations: DEMO_INTEGRATIONS,
+
+  mainAssemblyItems: DEMO_MAIN_ASSEMBLY_ITEMS,
+  mainAssemblyMates: DEMO_MAIN_ASSEMBLY_MATES,
+  mainAssemblyValidation: DEMO_MAIN_ASSEMBLY_VALIDATION,
+  selectedMainAssemblyItemId: 'mai-002',
+
   activeEnquiryId: 'enq-001',
   selectedFileId: undefined,
-  selectedChangeId: undefined,
+  selectedChangeId: 'chg-001',
   activeExecutionId: 'exec-001',
   activeReviewId: 'rev-eng-001',
   activeBOMId: 'bom-001',
   currentUser: 'J. Hartmann',
-  currentWorkspace: 'Pump Engineering',
+  currentWorkspace: 'Custom Industrial Skid Engineering',
   isDemoMode: true,
 };
 
@@ -142,6 +167,9 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
 
     case 'SET_ACTIVE_BOM':
       return { ...state, activeBOMId: action.id };
+
+    case 'SET_MAIN_ASSEMBLY_ITEM_SELECTION':
+      return { ...state, selectedMainAssemblyItemId: action.id };
 
     case 'UPSERT_ENQUIRY': {
       const exists = state.enquiries.find(e => e.id === action.enquiry.id);
@@ -262,6 +290,43 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
       return { ...state, auditEvents: [action.event, ...state.auditEvents] };
     }
 
+    case 'UPDATE_MAIN_ASSEMBLY_ITEM': {
+      const updated = state.mainAssemblyItems.map(item =>
+        item.id === action.item.id ? { ...item, ...action.item } : item
+      );
+      return { ...state, mainAssemblyItems: updated };
+    }
+
+    case 'TRIGGER_ASSEMBLY_REBUILD': {
+      // Find item associated with this assembly and mark rebuilt
+      const updated = state.mainAssemblyItems.map(item => {
+        if (item.assemblyRefId === action.assemblyId) {
+          return {
+            ...item,
+            modificationStatus: 'modified_rebuilt' as const,
+            notes: `${item.notes} — Parametric rebuild completed cleanly in CAD Change Centre.`,
+          };
+        }
+        return item;
+      });
+      return { ...state, mainAssemblyItems: updated };
+    }
+
+    case 'RUN_MAIN_ASSEMBLY_VALIDATION': {
+      const allResolved = state.mainAssemblyItems.every(i => !i.isSuppressed);
+      const validation: MainAssemblyValidation = {
+        allAssembliesResolved: allResolved,
+        mateSatisfactionRate: 100,
+        envelopeStatus: 'within_limit',
+        overallDimensions: { length: 1720, width: 780, height: 1180, unit: 'mm' },
+        centerOfGravity: { x: 42, y: 165, z: 8 },
+        totalMassKg: state.mainAssemblyItems.reduce((acc, i) => acc + (i.isSuppressed ? 0 : i.massKg), 0),
+        unresolvedCount: 0,
+        validationTimestamp: new Date().toISOString(),
+      };
+      return { ...state, mainAssemblyValidation: validation };
+    }
+
     case 'IMPORT_FILES': {
       const existingIds = new Set(state.files.map(f => f.id));
       const newFiles = action.files.filter(f => !existingIds.has(f.id));
@@ -269,7 +334,21 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
     }
 
     case 'RESET_DEMO': {
-      return { ...initialState };
+      return {
+        ...initialState,
+        auditEvents: [
+          {
+            id: `audit-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            actor: state.currentUser,
+            action: 'Demo Reset',
+            entityType: 'System',
+            entityId: 'reset-all',
+            detail: 'All demo datasets, 10 equipment assemblies, and CAD simulations reset to pristine state.',
+          },
+          ...initialState.auditEvents,
+        ],
+      };
     }
 
     default:
@@ -328,4 +407,24 @@ export function useEnquiryChanges(enquiryId?: ID) {
 export function useEnquiryComparison(enquiryId?: ID) {
   const { state } = useStore();
   return state.comparisonResults.find(c => c.enquiryId === enquiryId);
+}
+
+export function useMainAssemblyItems(): MainAssemblyItem[] {
+  const { state } = useStore();
+  return state.mainAssemblyItems;
+}
+
+export function useMainAssemblyMates(): MainAssemblyMate[] {
+  const { state } = useStore();
+  return state.mainAssemblyMates;
+}
+
+export function useMainAssemblyValidation(): MainAssemblyValidation {
+  const { state } = useStore();
+  return state.mainAssemblyValidation;
+}
+
+export function useEquipmentComparisons(): Record<string, ComparisonResult> {
+  const { state } = useStore();
+  return state.equipmentComparisons;
 }

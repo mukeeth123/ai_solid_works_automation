@@ -404,6 +404,7 @@ export interface BOMItem {
   sourceConfiguration?: string;
   bomType: BOMType;
   validationStatus: ValidationStatus;
+  partMasterRef?: string;
   erpMapping?: string;
   parentItemId?: ID;
   isModified?: boolean;
@@ -439,6 +440,52 @@ export interface BOMValidationError {
   field?: string;
   severity: 'error' | 'warning' | 'info';
   message: string;
+}
+
+// ---- Main Assembly Coordination ----
+
+export interface MainAssemblyMate {
+  id: ID;
+  name: string;
+  mateType: 'coincident' | 'concentric' | 'distance' | 'parallel' | 'perpendicular';
+  component1Id: ID;
+  component2Id: ID;
+  entity1: string;
+  entity2: string;
+  alignment: 'aligned' | 'anti_aligned' | 'closest';
+  status: 'satisfied' | 'over_defined' | 'broken';
+  toleranceMm?: number;
+}
+
+export interface MainAssemblyItem {
+  id: ID;
+  assemblyRefId: ID;
+  partNumber: string;
+  fileName: string;
+  description: string;
+  category: 'standard_reuse' | 'modified';
+  modificationStatus: 'verified' | 'modified_rebuilt' | 'pending_modification' | 'not_required';
+  position: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  quantity: number;
+  revision: string;
+  massKg: number;
+  isFixed: boolean;
+  isSuppressed: boolean;
+  boundingBox: { length: number; width: number; height: number; unit: string };
+  mateIds: string[];
+  notes: string;
+}
+
+export interface MainAssemblyValidation {
+  allAssembliesResolved: boolean;
+  mateSatisfactionRate: number; // 0 to 100%
+  envelopeStatus: 'within_limit' | 'exceeds_limit';
+  overallDimensions: { length: number; width: number; height: number; unit: string };
+  centerOfGravity: { x: number; y: number; z: number };
+  totalMassKg: number;
+  unresolvedCount: number;
+  validationTimestamp: ISODateString;
 }
 
 // ---- Audit ----

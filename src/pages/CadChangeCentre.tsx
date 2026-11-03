@@ -500,6 +500,13 @@ What specific design action or verification would you like to run?`,
 
       dispatch({ type: 'UPSERT_EXECUTION', execution: completedExec });
 
+      // Update Main Assembly with rebuilt component state
+      if (selectedChange.targetFileId === 'prt-001' || selectedChange.targetFileId === 'asm-001') {
+        dispatch({ type: 'TRIGGER_ASSEMBLY_REBUILD', assemblyId: 'asm-001' });
+      } else if (selectedChange.targetFileId === 'prt-006' || selectedChange.targetFileId === 'asm-004') {
+        dispatch({ type: 'TRIGGER_ASSEMBLY_REBUILD', assemblyId: 'asm-004' });
+      }
+
       // Audit event
       dispatch({
         type: 'ADD_AUDIT_EVENT',
@@ -618,7 +625,13 @@ What specific design action or verification would you like to run?`,
               <RotateCcw size={13} /> Back to Planner
             </button>
             <button
-              className="btn-primary"
+              className="btn-primary bg-[#315D78] hover:bg-[#254B62] text-white flex items-center gap-1.5"
+              onClick={() => navigate('/main-assembly')}
+            >
+              <Box size={13} /> Main Assembly Integration →
+            </button>
+            <button
+              className="btn-secondary"
               onClick={() => navigate('/review')}
             >
               <CheckSquare size={13} /> Review & Release

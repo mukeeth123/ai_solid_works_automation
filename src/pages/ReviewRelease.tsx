@@ -332,7 +332,7 @@ export default function ReviewRelease() {
               <AlertBanner
                 type="error"
                 message="Critical validation non-conformances detected."
-                detail="BOM ERP mapping or structural checks must be resolved or formally exempted before release authorization."
+                detail="Assembly validation non-conformances or structural checks must be resolved or formally exempted before release authorization."
               />
             )}
           </ScrollPane>
@@ -465,12 +465,12 @@ export default function ReviewRelease() {
                     <th>Rev</th>
                     <th>Config</th>
                     <th>Validation</th>
-                    <th>ERP Mapping</th>
+                    <th>Part Master Ref</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bom?.items.map(item => (
-                    <tr key={item.id} className={!item.erpMapping ? 'bg-[#FFFDF0]' : ''}>
+                    <tr key={item.id} className={item.validationStatus === 'failed' ? 'bg-[#FFFDF0]' : ''}>
                       <td className="font-mono text-[#68737D]">{item.itemNumber}</td>
                       <td className="font-mono text-[11.5px] font-bold text-[#315D78]">
                         {item.partNumber}
@@ -487,15 +487,9 @@ export default function ReviewRelease() {
                         <StatusBadge status={item.validationStatus} />
                       </td>
                       <td>
-                        {item.erpMapping ? (
-                          <span className="font-mono text-[11px] text-[#2D7A4F] bg-[#EBF5EF] px-1.5 py-0.5 rounded">
-                            {item.erpMapping}
-                          </span>
-                        ) : (
-                          <span className="text-[10.5px] text-[#9A6A00] bg-[#FEF8E6] px-1.5 py-0.5 rounded italic">
-                            Unmapped
-                          </span>
-                        )}
+                        <span className="font-mono text-[11px] text-[#2D7A4F] bg-[#EBF5EF] px-1.5 py-0.5 rounded">
+                          {item.partMasterRef || item.erpMapping || `ENG-${item.partNumber}`}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -579,15 +573,15 @@ export default function ReviewRelease() {
                 </div>
               </div>
 
-              {/* Downstream ERP & PLM Boundary */}
+              {/* Manufacturing Release & Drawing Hand-off */}
               <div className="eng-panel p-4 space-y-3">
                 <div className="flex items-center gap-2 pb-2 border-b border-[#EEF1F4]">
                   <Send size={16} className="text-[#315D78]" />
-                  <span className="text-[13px] font-bold text-[#20272E]">Downstream Hand-off Interface</span>
+                  <span className="text-[13px] font-bold text-[#20272E]">Manufacturing Release & Drawing Hand-off</span>
                 </div>
 
-                <div className="p-3 bg-[#FEF8E6] border border-[#F5D78A] text-[#7A5400] text-[11.5px] rounded">
-                  <strong>ERP / PLM Boundary:</strong> Direct writes to production SAP / Windchill / Teamcenter are locked until authorised connector endpoints are provisioned. Use verified exports below.
+                <div className="p-3 bg-[#EBF5EF] border border-[#85C9A1] text-[#1A5433] text-[11.5px] rounded">
+                  <strong>Manufacturing Release Package:</strong> Engineering drawings, verified BOM, and CAD models are bundled into the official Manufacturing Release Package for production fabrication and skid assembly.
                 </div>
 
                 <div className="space-y-2 pt-2">

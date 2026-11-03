@@ -164,17 +164,17 @@ export function generateBOMFromAssembly(
     sourceConfiguration: comp.configuration ?? configName,
     bomType: 'engineering' as const,
     validationStatus: comp.isResolved ? 'passed' : 'review_required' as const,
-    erpMapping: undefined,
+    partMasterRef: `ENG-${comp.partNumber ?? comp.fileId}`,
   }));
 
   const validationErrors = items
-    .filter(i => !i.erpMapping)
+    .filter(i => !i.partMasterRef)
     .map(i => ({
       id: `bve-gen-${i.id}`,
       itemId: i.id,
-      field: 'erpMapping',
+      field: 'partMasterRef',
       severity: 'info' as const,
-      message: `ERP mapping not set for ${i.partNumber}.`,
+      message: `Part master reference not set for ${i.partNumber}.`,
     }));
 
   return {

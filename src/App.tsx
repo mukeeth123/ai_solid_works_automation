@@ -12,6 +12,7 @@ const EnquiryWorkspace = lazy(() => import('./pages/EnquiryWorkspace'));
 const EngineeringLibrary = lazy(() => import('./pages/EngineeringLibrary'));
 const ComparePlan = lazy(() => import('./pages/ComparePlan'));
 const CadChangeCentre = lazy(() => import('./pages/CadChangeCentre'));
+const MainAssembly = lazy(() => import('./pages/MainAssembly'));
 const ReviewRelease = lazy(() => import('./pages/ReviewRelease'));
 const ActivityHistory = lazy(() => import('./pages/ActivityHistory'));
 
@@ -31,14 +32,16 @@ function App() {
         <AppShell>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
-              <Route path="/" element={<Navigate to="/enquiries" replace />} />
-              <Route path="/enquiries" element={<EnquiryWorkspace />} />
+              <Route path="/" element={<Navigate to="/library" replace />} />
               <Route path="/library" element={<EngineeringLibrary />} />
               <Route path="/compare" element={<ComparePlan />} />
+              <Route path="/reuse-comparison" element={<ComparePlan />} />
               <Route path="/cad-change" element={<CadChangeCentre />} />
+              <Route path="/main-assembly" element={<MainAssembly />} />
               <Route path="/review" element={<ReviewRelease />} />
               <Route path="/history" element={<ActivityHistory />} />
-              <Route path="*" element={<Navigate to="/enquiries" replace />} />
+              <Route path="/enquiries" element={<EnquiryWorkspace />} />
+              <Route path="*" element={<Navigate to="/library" replace />} />
             </Routes>
           </Suspense>
         </AppShell>

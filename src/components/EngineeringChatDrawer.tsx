@@ -1,6 +1,7 @@
 // ============================================================
 // VOLM Engineering Intelligence — Natural Language Engineering Copilot
 // Professional Industrial Terminal & Query Drawer
+// Connected to all 10 equipment assemblies, changes, and main assembly
 // ============================================================
 
 import { useState, useRef, useEffect } from 'react';
@@ -8,9 +9,12 @@ import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare, Send, X, Terminal, ArrowRight, CheckCircle,
   AlertTriangle, Layers, Settings2, FileText, Sparkles, Database,
-  Cpu, Shield, RotateCcw, CornerDownLeft
+  Cpu, Shield, RotateCcw, CornerDownLeft, Box, CheckSquare
 } from 'lucide-react';
-import { useStore, useActiveEnquiry, useAllFiles } from '../store/appStore';
+import {
+  useStore, useActiveEnquiry, useAllFiles, useMainAssemblyItems,
+  useEnquiryChanges
+} from '../store/appStore';
 import { cn } from './shared';
 
 interface ChatMessage {
@@ -19,7 +23,7 @@ interface ChatMessage {
   timestamp: string;
   text: string;
   referencedEntities?: Array<{
-    type: 'part' | 'requirement' | 'change' | 'bom' | 'drawing';
+    type: 'part' | 'requirement' | 'change' | 'bom' | 'drawing' | 'assembly';
     label: string;
     actionPath?: string;
   }>;
@@ -30,12 +34,11 @@ interface ChatMessage {
 }
 
 const SAMPLE_SUGGESTIONS = [
-  'What critical requirements are missing or unconfirmed?',
-  'Find reusable pump assemblies with flow >= 40 m³/h',
-  'Trace dependencies for the DN125 casing change',
-  'Audit the current BOM for missing ERP mappings',
-  'Is 316L Stainless Steel suitable for chemical dosing service?',
-  'What is the status of CAD execution EXEC-001?',
+  'Find reusable equipment.',
+  'Identify required modifications.',
+  'Analyse assembly dependencies.',
+  'Explain proposed design changes.',
+  'Summarise the main assembly.',
 ];
 
 export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: boolean | (() => void) }) {
@@ -43,6 +46,8 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
   const { state } = useStore();
   const enquiry = useActiveEnquiry();
   const allFiles = useAllFiles();
+  const mainItems = useMainAssemblyItems();
+  const changes = useEnquiryChanges(enquiry?.id);
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -53,10 +58,10 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
       id: 'msg-init-1',
       sender: 'assistant',
       timestamp: new Date().toISOString(),
-      text: `VOLM Engineering Copilot initialized. I have indexed active enquiry ${enquiry?.reference || 'ENQ-2025-0047'}, ${allFiles.length} CAD models, active comparison records, and the current EBOM.\n\nAsk any question regarding equipment requirements, SOLIDWORKS geometry parameters, change impacts, or BOM validation.`,
+      text: `VOLM Engineering Copilot initialized. I have indexed active project ${enquiry?.reference || 'ENQ-2025-0047'}, 10 Equipment Assemblies (8 Standard Reuse + 2 Modified), 4 Engineering Changes, and the Main Skid Assembly.\n\nSelect any quick prompt below or enter an engineering query regarding component reuse, CAD modifications, kinematic mates, or design validation.`,
       referencedEntities: [
+        { type: 'assembly', label: 'MAIN_PROCESS_SKID_ASSY.SLDASM', actionPath: '/main-assembly' },
         { type: 'requirement', label: enquiry?.reference || 'Active Enquiry', actionPath: '/enquiries' },
-        { type: 'part', label: 'PUMP_UNIT_STD_A.SLDASM', actionPath: '/library' },
       ],
     },
   ]);
@@ -70,8 +75,8 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
   const handleClose = typeof onClose === 'function' ? onClose : () => {};
 
   const handleSend = (queryText?: string) => {
-    const textToSend = queryText || input;
-    if (!textToSend.trim()) return;
+    const textToSend = (queryText || input).trim();
+    if (!textToSend) return;
 
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -84,309 +89,309 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
     if (!queryText) setInput('');
     setIsTyping(true);
 
-    // Deterministic Industrial Response Engine
+    // Deterministic Industrial Engineering Intelligence Response Engine
     setTimeout(() => {
       const q = textToSend.toLowerCase();
       let reply: ChatMessage;
 
-      if (q.includes('missing') || q.includes('unconfirmed') || q.includes('critical requirement')) {
-        const missingReqs = enquiry?.requirements.filter(r => r.status === 'missing' || r.status === 'unconfirmed') || [];
+      // 1. "Find reusable equipment."
+      if (q.includes('find') || q.includes('reusable') || q.includes('reuse candidate')) {
+        const standardAssys = mainItems.filter(i => i.category === 'standard_reuse');
         reply = {
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Found ${missingReqs.length} unresolved requirements in ${enquiry?.reference}:\n\n` +
-            `• REQ-009 (Motor Power): Missing. Required power must be calculated from duty point (65 m³/h @ 48 m head).\n` +
-            `• REQ-011 (Structural Assessment): Critical open item. Casing wall stress must be evaluated for DN125 nozzle loads.\n` +
-            `• REQ-008 (Foundation Footprint): Unconfirmed customer provisional value (≤ 950 × 450 mm).\n\n` +
-            `Rule Check: Progress to CAD execution is permitted with warnings, but formal release requires structural sign-off.`,
+          text: `Found 8 Standard Equipment Assemblies suitable for 100% Direct Library Reuse:\n\n` +
+            `1. VLM-MOT-IE4-15K (ABB 15 kW IE4 Motor): Frame 160M, 1475 RPM, ATEX Zone 1. Direct match for 65 m³/h @ 48m duty.\n` +
+            `2. VLM-CPL-GRID-20 (Grid Coupling): Taper-grid with 140 mm DBSE spacer for cartridge seal maintenance.\n` +
+            `3. VLM-VLV-SUC-125 (Suction Valve DN125): PN16 triple-offset wafer butterfly valve with manual gearbox.\n` +
+            `4. VLM-VLV-DIS-100 (Discharge Valve DN100): Dual-plate non-slam check valve + throttling globe valve (PN25).\n` +
+            `5. VLM-SPL-SUC-125 (Suction Spool DN125): Fabricated 316L SS eccentric reducer spool with drain boss.\n` +
+            `6. VLM-SPL-DIS-100 (Discharge Spool DN100): Heavy-wall 316L SS manifold with dual 1/2" NPT instrument ports.\n` +
+            `7. VLM-BFR-53A-12L (Plan 53A Seal System): API 682 12L barrier fluid reservoir vessel with level transmitter.\n` +
+            `8. VLM-ENC-IP66-SS (Sensor Enclosure): IP66 316SS junction box for vibration accelerometer & RTD PT100 wiring.\n\n` +
+            `Assessment: These 8 assemblies require ZERO geometric modifications and are verified in the Main Assembly workspace.`,
           referencedEntities: [
-            { type: 'requirement', label: 'REQ-009 Motor Power', actionPath: '/enquiries' },
-            { type: 'requirement', label: 'REQ-011 Structural Assessment', actionPath: '/enquiries' },
+            { type: 'assembly', label: '8 Standard Assemblies', actionPath: '/compare' },
+            { type: 'assembly', label: 'Main Assembly Workspace', actionPath: '/main-assembly' },
           ],
           suggestedAction: {
-            label: 'Review in Enquiry Workspace',
-            path: '/enquiries',
-          },
-        };
-      } else if (q.includes('find') || q.includes('reusable') || q.includes('pump') || q.includes('flow')) {
-        reply = {
-          id: `msg-resp-${Date.now()}`,
-          sender: 'assistant',
-          timestamp: new Date().toISOString(),
-          text: `Identified 1 matching assembly candidate in the library:\n\n` +
-            `• Model: PUMP_UNIT_STD_A.SLDASM (Rev C, Released)\n` +
-            `• Baseline Flow: 45 m³/h @ 32 m head (Motor: 11 kW)\n` +
-            `• Enquiry Target: 65 m³/h @ 48 m head\n\n` +
-            `Reusability Evaluation: Classed as "Modify Candidate". The frame and bearing bracket can be reused directly; casing inlet requires DN125 modification and wetted parts require 316L SS material assignment.`,
-          referencedEntities: [
-            { type: 'part', label: 'PUMP_UNIT_STD_A.SLDASM', actionPath: '/library' },
-            { type: 'part', label: 'PUMP_CASING_STD_A.SLDPRT', actionPath: '/library' },
-          ],
-          suggestedAction: {
-            label: 'Inspect in Compare & Plan',
+            label: 'Inspect Reuse & Comparison Matrix',
             path: '/compare',
           },
         };
-      } else if (q.includes('dependenc') || q.includes('dn125') || q.includes('trace') || q.includes('inlet')) {
+      }
+      // 2. "Identify required modifications."
+      else if (q.includes('modifi') || q.includes('modify candidate') || q.includes('requires modification')) {
         reply = {
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Traceability graph for CHG-001 (InletDiameter 100mm → 125mm):\n\n` +
-            `1. Target Parameter: D1@Inlet_Port_Boss in PUMP_CASING_STD_A.SLDPRT (DN125 Configuration)\n` +
-            `2. Assembly Impact: PUMP_UNIT_STD_A.SLDASM inlet suction mate alignment verified.\n` +
-            `3. Drafting Impact: Drawing DRW-VLM-1042-A-C (Sheets 1 & 3) requires dimension update (Ø100 → Ø125 H7) and bolt circle update (Ø180 → Ø210).\n` +
-            `4. BOM Impact: BOM Item 1 description callout updated to DN125 casing.\n` +
-            `5. Approval Status: Approved by S. Okonkwo on 2025-01-11.`,
+          text: `Identified 2 Equipment Assemblies requiring parametric engineering modifications:\n\n` +
+            `1. ASM-001: PUMP_UNIT_STD_A.SLDASM (Centrifugal Feed Pump Unit)\n` +
+            `   • Baseline: DN100 suction inlet / 45 m³/h / Cast Iron GG25 / 32 m head.\n` +
+            `   • Required Modifications: Enlarge suction nozzle to DN125 (8-hole PN16 BCD 210mm) to lower inlet velocity to 1.47 m/s (+1.2m NPSH margin), assign 316L Stainless Steel metallurgy for chemical dosing, and trim impeller diameter to 188 mm for 48m head.\n\n` +
+            `2. ASM-004: SKID_BASE_FRAME_HEAVY.SLDASM (Structural Skid Base Frame)\n` +
+            `   • Baseline: 1200 mm length / 4 cross-members / 11 kW motor footprint.\n` +
+            `   • Required Modifications: Extend longitudinal C-channel girders from 1200 mm to 1450 mm (+250 mm) to support upgraded 15 kW motor frame (160M) and DN125 pipe spool anchor loads; shift motor mounting pad slots by +180 mm; increase stiffener ribs from 4 to 6.\n\n` +
+            `Both modifications have approved change orders and have been verified via simulated CAD rebuild.`,
           referencedEntities: [
-            { type: 'change', label: 'CHG-001 (Inlet 125mm)', actionPath: '/compare' },
-            { type: 'drawing', label: 'DRW-VLM-1042-A-C', actionPath: '/review' },
-            { type: 'bom', label: 'BOM Item 1', actionPath: '/review' },
+            { type: 'change', label: 'CHG-001 (DN125 Inlet)', actionPath: '/cad-change' },
+            { type: 'change', label: 'CHG-003 (Skid 1450mm Length)', actionPath: '/cad-change' },
+          ],
+          suggestedAction: {
+            label: 'Review in Change Planner',
+            path: '/compare',
+          },
+        };
+      }
+      // 3. "Analyse assembly dependencies."
+      else if (q.includes('dependenc') || q.includes('analyse') || q.includes('mate') || q.includes('trace')) {
+        reply = {
+          id: `msg-resp-${Date.now()}`,
+          sender: 'assistant',
+          timestamp: new Date().toISOString(),
+          text: `Cross-Assembly Traceability & Dependency Analysis for Main Process Skid:\n\n` +
+            `• Suction Fluid Chain Dependency:\n` +
+            `  Customer Ingestion Pipe → Spool SPL-SUC-125 (DN125) → Butterfly Valve VLV-SUC-125 (DN125) → Pump Casing Inlet (Modified DN125 PN16).\n` +
+            `  Dependency Rule: Bolt circle diameter must match BCD Ø210 with 8 × M16 studs.\n\n` +
+            `• Drive Train Kinematic Dependency:\n` +
+            `  Skid Frame (Modified 1450mm) → Motor Foot Pads (Pedestal +180mm) → Motor Shaft (Ø42mm) → Grid Coupling (140mm Spacer) → Pump Shaft (Ø28mm).\n` +
+            `  Dependency Rule: Concentric shaft alignment must remain within 0.05 mm TIR (verified: 0.018 mm).\n\n` +
+            `• Boundary Limit Dependency:\n` +
+            `  Skid base length extension (1200 → 1450 mm) results in overall skid envelope of 1720 × 780 mm, maintaining +130 mm margin inside the customer civil foundation constraint (1850 × 850 mm).`,
+          referencedEntities: [
+            { type: 'assembly', label: 'Main Assembly Mates', actionPath: '/main-assembly' },
+            { type: 'drawing', label: 'GA Drawing DRW-VLM-SKD-MAIN-A2', actionPath: '/review' },
+          ],
+          suggestedAction: {
+            label: 'Inspect Main Assembly Tree & Mates',
+            path: '/main-assembly',
+          },
+        };
+      }
+      // 4. "Explain proposed design changes."
+      else if (q.includes('explain') || q.includes('proposed') || q.includes('change')) {
+        reply = {
+          id: `msg-resp-${Date.now()}`,
+          sender: 'assistant',
+          timestamp: new Date().toISOString(),
+          text: `Engineering Evaluation of Active Design Changes:\n\n` +
+            `• CHG-001 (InletDiameter 100 mm → 125 mm):\n` +
+            `  Hydraulic Duty: Q = 65 m³/h (0.01806 m³/s).\n` +
+            `  Velocity in DN100 bore: v = 2.30 m/s (causes cavitation & turbulence).\n` +
+            `  Velocity in DN125 bore: v = 1.47 m/s (−36.1% reduction per HI 9.6.6 standards).\n` +
+            `  NPSHr improved from 3.8m to 2.6m (+1.2m safety margin).\n\n` +
+            `• CHG-002 (Material Upgrade Cast Iron GG25 → 316L SS):\n` +
+            `  Acid chemical dosing fluid attacks standard cast iron. AISI 316L (1.4404) provides PREN ≥ 23.5, fully certified against pitting.\n\n` +
+            `• CHG-003 (Skid Frame Channel Length 1200 mm → 1450 mm):\n` +
+            `  Upgrading drive motor from 11 kW to 15 kW (Frame 160M) requires 250 mm additional channel span to maintain 140 mm coupling spacer distance.\n\n` +
+            `• CHG-004 (Motor Pedestal Mounting Slot Offset +180 mm):\n` +
+            `  Shifts bolt slot pitch from 380 mm to 560 mm to ensure collinear shaft concentricity.`,
+          referencedEntities: [
+            { type: 'change', label: 'CHG-001 (Inlet 125mm)', actionPath: '/cad-change' },
+            { type: 'change', label: 'CHG-003 (Skid Length)', actionPath: '/cad-change' },
           ],
           suggestedAction: {
             label: 'Open CAD Change Centre',
             path: '/cad-change',
           },
         };
-      } else if (q.includes('bom') || q.includes('erp') || q.includes('audit')) {
+      }
+      // 5. "Summarise the main assembly."
+      else if (q.includes('summar') || q.includes('main assembly') || q.includes('skid')) {
         reply = {
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Engineering BOM Audit for PUMP_UNIT_STD_A.SLDASM (Rev C):\n\n` +
-            `• Total Line Items: 6 components (100% resolved references).\n` +
-            `• ERP Ready: 4 items mapped (VLM-PUMP-1042-A, VLM-IMP-5VN-200, VLM-SHAFT-028, VLM-BB-STD-01).\n` +
-            `• Warnings (2 items missing ERP mapping):\n` +
-            `   - Item 4 (VLM-SEAL-T2-28): Mechanical seal lacks ERP part master record.\n` +
-            `   - Item 6 (VLM-BSG-001): Bearing sub-assembly lacks parent assembly code.\n\n` +
-            `Release Gate: ERP export will be flagged until these 2 mappings are provided.`,
+          text: `Main Assembly Summary Dossier — MAIN_PROCESS_SKID_ASSY.SLDASM (Rev A.2):\n\n` +
+            `• System Definition: Custom Chemical Transfer & Dosing Skid Unit.\n` +
+            `• Sub-Assemblies Coordinated: 10 Total (8 Standard Reuse + 2 Modified).\n` +
+            `• Total Mass: 568.1 kg (Steel Skid: 218kg, Motor: 142kg, Pump: 86.5kg, Auxiliaries: 121.6kg).\n` +
+            `• Overall Physical Envelope: 1720 mm (L) × 780 mm (W) × 1180 mm (H).\n` +
+            `• Civil Foundation Constraint: Passed (Customer limit: 1850 × 850 mm).\n` +
+            `• Mates & Alignment: 10/10 kinematic mates satisfied with 0.018 mm TIR shaft concentricity.\n` +
+            `• Design Validation Status: 100% Passed. Ready for engineering sign-off and downstream release.`,
           referencedEntities: [
-            { type: 'bom', label: 'EBOM Rev C', actionPath: '/review' },
+            { type: 'assembly', label: 'MAIN_PROCESS_SKID_ASSY.SLDASM', actionPath: '/main-assembly' },
+            { type: 'drawing', label: 'General Arrangement Drawing', actionPath: '/review' },
           ],
           suggestedAction: {
-            label: 'View BOM Validation Tab',
-            path: '/review',
+            label: 'View 3D Main Assembly Workspace',
+            path: '/main-assembly',
           },
         };
-      } else if (q.includes('316l') || q.includes('material') || q.includes('chemical')) {
+      }
+      // General Engineering Query Fallback
+      else {
         reply = {
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Material Evaluation: 316L Stainless Steel (1.4404) vs. Baseline Cast Iron (GG25):\n\n` +
-            `• Compatibility: 316L SS meets chemical dosing requirements per customer spec Section 4.1 (pitting resistance PREN ≥ 23).\n` +
-            `• Density & Mass: 316L density (8,000 kg/m³) is +11% higher than Cast Iron (7,200 kg/m³). Net casing mass increases from 14.6 kg to ~16.2 kg if cast with equivalent wall thickness.\n` +
-            `• Change Proposal: CHG-002 is registered in the planner awaiting Lead Materials Engineer approval.`,
+          text: `Engineering Copilot evaluated query: "${textToSend}"\n\n` +
+            `Cross-referenced active project ${enquiry?.reference}, 10 equipment assemblies, and CAD models:\n` +
+            `• Scope: 10 Assemblies (8 Standard Reuse, 2 Modified)\n` +
+            `• Pump Model: PUMP_UNIT_STD_A.SLDASM (Modified DN125)\n` +
+            `• Skid Model: SKID_BASE_FRAME_HEAVY.SLDASM (Modified 1450mm)\n` +
+            `• Main Assembly: MAIN_PROCESS_SKID_ASSY.SLDASM (Rev A.2)\n\n` +
+            `Try clicking one of the practical prompt chips above for targeted technical evaluations.`,
           referencedEntities: [
-            { type: 'change', label: 'CHG-002 Material Change', actionPath: '/compare' },
-            { type: 'requirement', label: 'REQ-004 Material Spec', actionPath: '/enquiries' },
+            { type: 'assembly', label: 'Main Assembly Workspace', actionPath: '/main-assembly' },
+            { type: 'part', label: 'CAD Change Centre', actionPath: '/cad-change' },
           ],
           suggestedAction: {
-            label: 'Inspect Change CHG-002',
-            path: '/compare',
-          },
-        };
-      } else if (q.includes('exec') || q.includes('cad') || q.includes('status')) {
-        const lastExec = state.executions[0];
-        reply = {
-          id: `msg-resp-${Date.now()}`,
-          sender: 'assistant',
-          timestamp: new Date().toISOString(),
-          text: `CAD Execution Status Dossier:\n\n` +
-            `• Active Execution ID: ${lastExec?.id || 'EXEC-001'}\n` +
-            `• Target: PUMP_CASING_STD_A.SLDPRT [DN125 Configuration]\n` +
-            `• Adapter: Mock CAD Adapter (Deterministic Simulation Mode)\n` +
-            `• Pipeline Result: Complete (All 5 stages passed: Pre-flight → Sandbox → Parameter Mutation → Rebuild → Readback)\n` +
-            `• Actual Readback: 125 mm (Tolerance verified)\n` +
-            `• Model Rebuild: Clean (0 errors, 0 warnings).\n\n` +
-            `Notice: Simulated CAD operation — no native SOLIDWORKS binary files modified on disk.`,
-          referencedEntities: [
-            { type: 'part', label: 'PUMP_CASING_STD_A.SLDPRT', actionPath: '/library' },
-          ],
-          suggestedAction: {
-            label: 'Inspect in CAD Change Centre',
-            path: '/cad-change',
-          },
-        };
-      } else {
-        reply = {
-          id: `msg-resp-${Date.now()}`,
-          sender: 'assistant',
-          timestamp: new Date().toISOString(),
-          text: `Deterministic Engineering Query Parser evaluated: "${textToSend}"\n\n` +
-            `Cross-referenced against active enquiry ${enquiry?.reference}, library parts, and change history:\n` +
-            `• Active Equipment Scope: Centrifugal Chemical Dosing Pump Unit\n` +
-            `• Candidate Base Model: PUMP_UNIT_STD_A.SLDASM\n` +
-            `• Active Changes: 3 proposed (1 executed, 1 pending review, 1 revision requested)\n\n` +
-            `Use the suggested prompts below or specify a part number, requirement ID, or BOM item to drill down.`,
-          referencedEntities: [
-            { type: 'part', label: 'Engineering Library', actionPath: '/library' },
-            { type: 'bom', label: 'BOM Review', actionPath: '/review' },
-          ],
-          suggestedAction: {
-            label: 'Explore Library',
-            path: '/library',
+            label: 'Open Main Assembly Workspace',
+            path: '/main-assembly',
           },
         };
       }
 
       setMessages(prev => [...prev, reply]);
       setIsTyping(false);
-    }, 600);
+    }, 450);
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[460px] max-w-full bg-white border-l border-[#DDE2E6] shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-y-0 right-0 w-[460px] bg-[#1C2128] border-l border-[#2D3A47] shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-200">
       {/* Drawer Header */}
-      <div className="px-4 py-3 border-b border-[#DDE2E6] bg-[#202830] text-white flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-[#315D78] flex items-center justify-center">
-            <Terminal size={14} className="text-white" />
+      <div className="px-4 py-3 bg-[#242C35] border-b border-[#2D3A47] flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded bg-[#315D78] flex items-center justify-center text-white">
+            <Terminal size={14} className="text-[#58A6FF]" />
           </div>
           <div>
-            <h3 className="font-bold text-[13px] leading-tight flex items-center gap-1.5">
-              VOLM Engineering Copilot
-              <span className="text-[9px] font-mono bg-[#315D78] px-1.5 py-0.2 rounded text-white uppercase">
-                Deterministic
+            <div className="text-[12.5px] font-bold text-white flex items-center gap-2">
+              <span>Engineering Copilot</span>
+              <span className="px-1.5 py-0.2 rounded text-[9.5px] font-mono bg-[#388BFD]/20 text-[#58A6FF] border border-[#388BFD]/40">
+                Connected
               </span>
-            </h3>
-            <p className="text-[10.5px] text-[#9AAAB5] leading-tight">
-              Natural Language CAD & PDM Knowledge Engine
-            </p>
+            </div>
+            <div className="text-[10px] text-[#8B949E]">
+              10 Assemblies • Parametric SOLIDWORKS • Main Skid Integration
+            </div>
           </div>
         </div>
 
         <button
           onClick={handleClose}
-          className="text-[#9AAAB5] hover:text-white p-1 rounded hover:bg-[#2D3A47] transition-colors"
-          title="Close Copilot"
+          className="p-1 rounded text-[#8B949E] hover:text-white hover:bg-[#2E3B48] transition-colors"
         >
           <X size={16} />
         </button>
       </div>
 
-      {/* Security & Offline Guarantee Banner */}
-      <div className="px-3 py-1.5 bg-[#F4F5F6] border-b border-[#DDE2E6] flex items-center justify-between text-[10.5px] text-[#68737D] flex-shrink-0">
-        <div className="flex items-center gap-1.5">
-          <Shield size={11} className="text-[#315D78]" />
-          <span>Offline Deterministic Mode — Zero Confidential Data Exfiltration</span>
+      {/* Practical Prompt Chips Bar (Required Prompts) */}
+      <div className="px-3 py-2 bg-[#161B22] border-b border-[#2D3A47] space-y-1.5 flex-shrink-0">
+        <div className="text-[10px] font-bold text-[#8B949E] uppercase tracking-wider flex items-center gap-1">
+          <Sparkles size={11} className="text-[#58A6FF]" />
+          <span>Practical Engineering Prompts:</span>
         </div>
-        <span className="font-mono text-[9.5px]">ISO 27001</span>
-      </div>
-
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#FAFBFB]">
-        {messages.map(msg => (
-          <div
-            key={msg.id}
-            className={cn(
-              'flex flex-col',
-              msg.sender === 'user' ? 'items-end' : 'items-start'
-            )}
-          >
-            <div className="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-[#9AAAB5]">
-              <span>{msg.sender === 'user' ? state.currentUser : 'Engineering Intelligence'}</span>
-              <span>·</span>
-              <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-
-            <div
-              className={cn(
-                'p-3 rounded text-[12px] max-w-[92%] leading-relaxed',
-                msg.sender === 'user'
-                  ? 'bg-[#315D78] text-white rounded-br-none'
-                  : 'bg-white border border-[#DDE2E6] text-[#20272E] shadow-xs rounded-bl-none'
-              )}
-            >
-              <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
-
-              {/* Referenced Entities Pills */}
-              {msg.referencedEntities && msg.referencedEntities.length > 0 && (
-                <div className="mt-2.5 pt-2 border-t border-[#EEF1F4] flex flex-wrap gap-1.5">
-                  {msg.referencedEntities.map((ent, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        if (ent.actionPath) {
-                          navigate(ent.actionPath);
-                          handleClose();
-                        }
-                      }}
-                      className="inline-flex items-center gap-1 text-[10.5px] bg-[#EBF2F7] hover:bg-[#D5E3EE] text-[#315D78] font-medium px-2 py-0.5 rounded border border-[#C5D9E8] transition-colors"
-                    >
-                      <Layers size={10} />
-                      {ent.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Action Button */}
-              {msg.suggestedAction && (
-                <div className="mt-2 pt-2 border-t border-[#EEF1F4]">
-                  <button
-                    onClick={() => {
-                      navigate(msg.suggestedAction!.path);
-                      handleClose();
-                    }}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#315D78] hover:text-[#20272E] hover:underline"
-                  >
-                    <span>{msg.suggestedAction.label}</span>
-                    <ArrowRight size={11} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {isTyping && (
-          <div className="flex items-center gap-2 text-[#68737D] text-[11px] p-2 bg-white rounded border border-[#DDE2E6] w-fit">
-            <Terminal size={12} className="animate-spin text-[#315D78]" />
-            <span>Parsing engineering requirements & geometry graph...</span>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Suggested Quick Prompts */}
-      <div className="p-2 border-t border-[#DDE2E6] bg-white flex-shrink-0">
-        <div className="text-[10px] font-semibold text-[#68737D] uppercase tracking-wide mb-1 px-1">
-          Quick Engineering Prompts:
-        </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {SAMPLE_SUGGESTIONS.map((s, idx) => (
+        <div className="flex flex-wrap gap-1.5">
+          {SAMPLE_SUGGESTIONS.map((prompt, idx) => (
             <button
               key={idx}
-              onClick={() => handleSend(s)}
-              className="text-[10.5px] text-[#20272E] bg-[#F4F5F6] hover:bg-[#EBF2F7] hover:text-[#315D78] border border-[#DDE2E6] px-2 py-1 rounded whitespace-nowrap transition-colors flex-shrink-0"
+              onClick={() => handleSend(prompt)}
+              className="px-2 py-1 rounded text-[10.5px] font-medium bg-[#21262D] hover:bg-[#30363D] text-[#C9D1D9] hover:text-white border border-[#30363D] transition-colors text-left"
             >
-              {s}
+              {prompt}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Chat Input Bar */}
-      <div className="p-3 bg-white border-t border-[#DDE2E6] flex items-center gap-2 flex-shrink-0">
-        <input
-          className="eng-input text-[12px] flex-1 py-1.5"
-          placeholder="Ask about requirements, CAD parameters, BOM or dependencies..."
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') handleSend();
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#1C2128]">
+        {messages.map(msg => {
+          const isUser = msg.sender === 'user';
+          return (
+            <div
+              key={msg.id}
+              className={cn('flex flex-col', isUser ? 'items-end' : 'items-start')}
+            >
+              <div
+                className={cn(
+                  'max-w-[92%] p-3 rounded-lg text-[12px] leading-relaxed',
+                  isUser
+                    ? 'bg-[#315D78] text-white rounded-br-xs'
+                    : 'bg-[#242C35] text-[#C9D1D9] border border-[#2D3A47] rounded-bl-xs'
+                )}
+              >
+                <div className="whitespace-pre-wrap">{msg.text}</div>
+
+                {/* Referenced Entities Chips */}
+                {msg.referencedEntities && msg.referencedEntities.length > 0 && (
+                  <div className="mt-2.5 pt-2 border-t border-[#30363D] flex flex-wrap gap-1.5">
+                    {msg.referencedEntities.map((ent, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          if (ent.actionPath) {
+                            navigate(ent.actionPath);
+                            handleClose();
+                          }
+                        }}
+                        className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#161B22] text-[#58A6FF] hover:text-white border border-[#30363D] flex items-center gap-1"
+                      >
+                        <Box size={10} />
+                        <span>{ent.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Direct Action Link */}
+                {msg.suggestedAction && (
+                  <button
+                    onClick={() => {
+                      navigate(msg.suggestedAction!.path);
+                      handleClose();
+                    }}
+                    className="mt-2 w-full px-2.5 py-1.5 rounded bg-[#388BFD]/20 hover:bg-[#388BFD]/30 border border-[#388BFD]/40 text-[#58A6FF] hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <span>{msg.suggestedAction.label}</span>
+                    <ArrowRight size={12} />
+                  </button>
+                )}
+              </div>
+              <span className="text-[9.5px] text-[#6E7681] mt-1 px-1">
+                {isUser ? 'You' : 'Engineering Copilot'}
+              </span>
+            </div>
+          );
+        })}
+
+        {isTyping && (
+          <div className="flex items-center gap-2 text-[#8B949E] text-[11px] p-2">
+            <Sparkles size={13} className="animate-spin text-[#58A6FF]" />
+            <span>Analyzing assembly kinematics & parameters…</span>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Bar */}
+      <div className="p-3 bg-[#242C35] border-t border-[#2D3A47] flex-shrink-0">
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            handleSend();
           }}
-        />
-        <button
-          className="btn-primary py-1.5 px-3"
-          disabled={!input.trim() || isTyping}
-          onClick={() => handleSend()}
+          className="flex items-center gap-2"
         >
-          <Send size={13} />
-        </button>
+          <input
+            className="flex-1 bg-[#161B22] border border-[#30363D] focus:border-[#58A6FF] rounded px-3 py-2 text-[12px] text-white placeholder-[#6E7681] outline-none"
+            placeholder="Ask about reuse, modifications, mates, or validation..."
+            value={input}
+            onChange={e => setInput(e.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className="p-2 rounded bg-[#315D78] hover:bg-[#254B62] disabled:opacity-40 text-white transition-colors"
+          >
+            <Send size={14} />
+          </button>
+        </form>
       </div>
     </div>
   );

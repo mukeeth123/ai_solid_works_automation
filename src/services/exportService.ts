@@ -10,7 +10,7 @@ export function exportBOMasCSV(bom: BOM, items: BOMItem[]): void {
   const headers = [
     'Item No.', 'Part Number', 'Description', 'Component File Ref',
     'Qty', 'Unit', 'Material', 'Revision', 'Configuration',
-    'BOM Type', 'Validation Status', 'ERP Mapping',
+    'BOM Type', 'Validation Status', 'Part Master Ref',
   ];
 
   const rows = items.map(item => [
@@ -25,7 +25,7 @@ export function exportBOMasCSV(bom: BOM, items: BOMItem[]): void {
     item.sourceConfiguration ?? '',
     item.bomType,
     item.validationStatus,
-    item.erpMapping ?? '',
+    item.partMasterRef ?? item.erpMapping ?? `ENG-${item.partNumber}`,
   ]);
 
   const csvContent = [

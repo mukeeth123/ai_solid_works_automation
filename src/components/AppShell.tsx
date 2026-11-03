@@ -30,23 +30,26 @@ import { EngineeringChatDrawer } from './EngineeringChatDrawer';
 // ---- Navigation items ----
 
 const NAV_ITEMS = [
-  { path: '/enquiries', label: 'Enquiries', icon: FileText },
   { path: '/library', label: 'Engineering Library', icon: Library },
-  { path: '/compare', label: 'Compare & Plan', icon: GitCompare },
+  { path: '/compare', label: 'Reuse & Comparison', icon: GitCompare },
   { path: '/cad-change', label: 'CAD Change Centre', icon: Settings2 },
+  { path: '/main-assembly', label: 'Main Assembly', icon: Layers, highlight: true, badge: '10' },
   { path: '/review', label: 'Review & Release', icon: CheckSquare },
   { path: '/history', label: 'Activity History', icon: History },
+  { path: '/enquiries', label: 'Project Brief', icon: FileText },
 ];
 
 // ---- Breadcrumb mapping ----
 
 const ROUTE_BREADCRUMBS: Record<string, string[]> = {
-  '/enquiries': ['VOLM Engineering Intelligence', 'Enquiries'],
   '/library': ['VOLM Engineering Intelligence', 'Engineering Library'],
-  '/compare': ['VOLM Engineering Intelligence', 'Compare & Plan'],
+  '/compare': ['VOLM Engineering Intelligence', 'Reuse & Comparison (10 Assemblies)'],
+  '/reuse-comparison': ['VOLM Engineering Intelligence', 'Reuse & Comparison (10 Assemblies)'],
   '/cad-change': ['VOLM Engineering Intelligence', 'CAD Change Centre'],
-  '/review': ['VOLM Engineering Intelligence', 'Review & Release'],
+  '/main-assembly': ['VOLM Engineering Intelligence', 'Main Assembly (Master Skid Coordination)'],
+  '/review': ['VOLM Engineering Intelligence', 'Engineering Validation & Release'],
   '/history': ['VOLM Engineering Intelligence', 'Activity History'],
+  '/enquiries': ['VOLM Engineering Intelligence', 'Project Brief & Specifications'],
 };
 
 // ---- Shell Layout ----
@@ -97,16 +100,27 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-          {NAV_ITEMS.map(({ path, label, icon: Icon }) => (
+          {NAV_ITEMS.map(({ path, label, icon: Icon, badge, highlight }) => (
             <NavLink
               key={path}
               to={path}
               className={({ isActive }) =>
-                cn('nav-item', isActive ? 'active' : '')
+                cn(
+                  'nav-item flex items-center justify-between',
+                  isActive ? 'active' : '',
+                  highlight && !isActive ? 'text-[#58A6FF] hover:text-white' : ''
+                )
               }
             >
-              <Icon size={14} className="flex-shrink-0" />
-              <span>{label}</span>
+              <div className="flex items-center gap-2 truncate">
+                <Icon size={14} className="flex-shrink-0" />
+                <span className="truncate">{label}</span>
+              </div>
+              {badge && (
+                <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold font-mono bg-[#315D78] text-white">
+                  {badge}
+                </span>
+              )}
             </NavLink>
           ))}
 
