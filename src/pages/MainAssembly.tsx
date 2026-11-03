@@ -126,17 +126,17 @@ export default function MainAssembly() {
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-[15px] font-bold text-[#20272E] tracking-tight">
-                Main Assembly Workspace — MAIN_PROCESS_SKID_ASSY.SLDASM
+                Main Assembly Workspace — VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM
               </h1>
               <span className="px-2 py-0.5 rounded text-[10.5px] font-semibold bg-[#238636]/15 text-[#238636] border border-[#238636]/30">
-                Rev A.2 • 10 Assemblies Combined
+                Rev A.3 • 10 Assemblies Combined
               </span>
               <span className="px-2 py-0.5 rounded text-[10.5px] font-mono text-[#4A5568] bg-[#F1F3F5] border border-[#DDE2E6]">
-                Origin [0, 0, 0] Skid Datum
+                Origin [0, 0, 0] Infeed Line Datum
               </span>
             </div>
             <div className="text-[11px] text-[#68737D] mt-0.5 flex items-center gap-2">
-              <span>{enquiry?.reference || 'ENQ-2025-0047'} Custom Chemical Dosing Pump Skid</span>
+              <span>{enquiry?.reference || 'ENQ-2025-0047'} Volm High-Speed Automated Produce Packaging & Weighing System</span>
               <span>•</span>
               <span className="font-semibold text-[#20272E]">{stats.total} Total Sub-Assemblies</span>
               <span>(</span>
@@ -145,7 +145,7 @@ export default function MainAssembly() {
               <span className="text-[#B08800] font-medium">{stats.modifiedCount} Modified</span>
               <span>)</span>
               <span>•</span>
-              <span>Envelope: 1720 × 780 × 1180 mm</span>
+              <span>Envelope: 4650 × 1850 × 3450 mm</span>
               <span>•</span>
               <span>Total Mass: {stats.totalMass.toFixed(1)} kg</span>
             </div>
@@ -239,9 +239,9 @@ export default function MainAssembly() {
             <div className="px-2.5 py-2 rounded bg-[#F1F5F9] border border-[#CBD5E1] text-[11.5px] font-bold text-[#1E293B] flex items-center justify-between">
               <div className="flex items-center gap-1.5 truncate">
                 <Box size={14} className="text-[#315D78] flex-shrink-0" />
-                <span className="truncate">MAIN_PROCESS_SKID_ASSY</span>
+                <span className="truncate">VOLM_AUTOMATED_PACKAGING_LINE_MAIN</span>
               </div>
-              <span className="text-[10px] font-mono text-[#64748B]">Rev A.2</span>
+              <span className="text-[10px] font-mono text-[#64748B]">Rev A.3</span>
             </div>
 
             {/* Sub-Assembly Items */}
@@ -376,7 +376,7 @@ export default function MainAssembly() {
                       </span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-[#F1F5F9]">
-                      <span className="text-[#64748B]">Skid Datum Coordinates:</span>
+                      <span className="text-[#64748B]">Packaging Line Coordinates:</span>
                       <span className="font-mono text-[#0F172A]">
                         X:{selectedItem.position.x} Y:{selectedItem.position.y} Z:{selectedItem.position.z}
                       </span>
@@ -480,7 +480,7 @@ export default function MainAssembly() {
                 {/* Validation Checklist */}
                 <div className="space-y-2">
                   <div className="text-[11.5px] font-bold text-[#20272E] uppercase tracking-wider">
-                    Automated Industrial Checks
+                    Automated Packaging Line Checks
                   </div>
 
                   <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded text-[11px] space-y-1">
@@ -488,47 +488,47 @@ export default function MainAssembly() {
                       <span className="font-bold text-[#0F172A]">1. Sub-Assembly Resolution</span>
                       <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> 10 / 10 Present</span>
                     </div>
-                    <div className="text-[10.5px] text-[#64748B]">All 8 standard reuse and 2 modified assemblies exist with zero unresolved external references.</div>
+                    <div className="text-[10.5px] text-[#64748B]">All 8 standard reuse and 2 modified packaging assemblies resolved with 0 unresolved CAD references.</div>
                   </div>
 
                   <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded text-[11px] space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0F172A]">2. Shaft Collinear Alignment</span>
-                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> 0.018 mm TIR</span>
+                      <span className="font-bold text-[#0F172A]">2. Weigher Chute-to-Bagger Drop Mate</span>
+                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> Concentric Ø450 mm</span>
                     </div>
-                    <div className="text-[10.5px] text-[#64748B]">Pump and Motor shaft centerlines aligned within 0.05 mm concentric tolerance via taper-grid spacer coupling.</div>
+                    <div className="text-[10.5px] text-[#64748B]">Modified 450mm multi-head collector funnel aligns with VFFS 600mm pouch forming collar (0.0 mm interference).</div>
                   </div>
 
                   <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded text-[11px] space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0F172A]">3. Flange Nozzle Mating</span>
-                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> DN125 PN16 Match</span>
+                      <span className="font-bold text-[#0F172A]">3. Conveyor Infeed Transfer Height</span>
+                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> 2850 mm Elevation</span>
                     </div>
-                    <div className="text-[10.5px] text-[#64748B]">Modified pump casing suction nozzle mates seamlessly with standard DN125 butterfly valve and suction spool.</div>
+                    <div className="text-[10.5px] text-[#64748B]">Infeed elevator discharge head matches 800mm vibratory cross-feed pan hopper lip with +60 mm gravity fall.</div>
                   </div>
 
                   <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded text-[11px] space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0F172A]">4. Skid Civil Envelope</span>
-                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> +130 mm Margin</span>
+                      <span className="font-bold text-[#0F172A]">4. Plant Bay Footprint Limit</span>
+                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> +350 mm Margin</span>
                     </div>
-                    <div className="text-[10.5px] text-[#64748B]">Overall skid dimension (1720 × 780 mm) complies with customer civil boundary limit (1850 × 850 mm).</div>
+                    <div className="text-[10.5px] text-[#64748B]">Total line length (4650 mm) safely accommodates customer 5000 mm bay envelope with walkway access.</div>
                   </div>
 
                   <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded text-[11px] space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0F172A]">5. Hydraulic Suction Velocity</span>
-                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> 1.47 m/s (Pass)</span>
+                      <span className="font-bold text-[#0F172A]">5. Line Throughput & Speed Match</span>
+                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> 60 BPM Synchronized</span>
                     </div>
-                    <div className="text-[10.5px] text-[#64748B]">At duty flow 65 m³/h, DN125 inlet velocity satisfies HI 9.6.6 (&lt; 2.0 m/s) and prevents cavitation.</div>
+                    <div className="text-[10.5px] text-[#64748B]">14-head weigher portioning rate and VFFS rotary servo jaw cycle time synchronized at 60 bags/min.</div>
                   </div>
 
                   <div className="p-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded text-[11px] space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#0F172A]">6. Structural Skid Deflection</span>
-                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> 0.38 mm Max</span>
+                      <span className="font-bold text-[#0F172A]">6. Interlocked Safety Cell Enclosure</span>
+                      <span className="text-[#16A34A] font-bold flex items-center gap-1"><Check size={12} /> ISO 13849-1 Pass</span>
                     </div>
-                    <div className="text-[10.5px] text-[#64748B]">Under 18 kN total static equipment load, structural channel deflection remains below 0.45 mm limit.</div>
+                    <div className="text-[10.5px] text-[#64748B]">Lexan polycarbonate cell completely encloses sealing jaw hazard zone with Cat 4 / PLe RFID safety switches.</div>
                   </div>
                 </div>
 

@@ -60,15 +60,15 @@ export default function CadChangeCentre() {
       id: 'cad-copilot-1',
       sender: 'assistant',
       timestamp: 'Just now',
-      title: 'CAD Design & Modification Copilot Initialized',
-      text: `Active Model: PUMP_CASING_STD_A.SLDPRT (Configuration: DN125)
-Selected Change: CHG-001 (InletDiameter: 100 mm → 125 mm)
+      title: 'Packaging CAD Design & Modification Copilot Initialized',
+      text: `Active Model: WEIGHER_DISCHARGE_CHUTE_450.SLDPRT (Configuration: Width_450mm)
+Selected Change: CHG-001 (ChuteOutlet_mm: 300 mm → 450 mm, Funnel Angle: 55° → 62°)
 
-I am actively monitoring geometric constraints, ISO 5199 hydraulic standards, EN 1092-1 flange rules, and SOLIDWORKS COM automation for this part. What modification or calculation would you like to perform?`,
+I am actively monitoring geometric constraints, USDA/FDA 3-A sanitary guidelines, high-speed produce discharge dynamics (60 BPM), and SOLIDWORKS COM automation for this packaging part. What modification or calculation would you like to perform?`,
       metrics: [
-        { label: 'Bore Delta', value: '100 → 125 mm (+25%)', status: 'good' },
-        { label: 'Flange BCD', value: '180 → 210 mm (PN16)', status: 'good' },
-        { label: 'Wall Thickness', value: '12.0 mm (Safe @ 16 bar)', status: 'good' },
+        { label: 'Chute Delta', value: '300 → 450 mm (+50%)', status: 'good' },
+        { label: 'Slope Angle', value: '55° → 62° (Anti-Bridging)', status: 'good' },
+        { label: 'Material', value: '316L Stainless (Dimpled)', status: 'good' },
         { label: 'Rebuild Status', value: 'Clean (0 errors)', status: 'good' },
       ],
     },
@@ -76,26 +76,27 @@ I am actively monitoring geometric constraints, ISO 5199 hydraulic standards, EN
       id: 'cad-copilot-2',
       sender: 'assistant',
       timestamp: 'Just now',
-      title: 'Engineering Evaluation: Inlet Nozzle Bore Expansion (CHG-001)',
-      text: `Based on customer duty point (65 m³/h @ 48 m head), expanding the suction bore from DN100 to DN125 reduces inlet velocity from 2.30 m/s to 1.47 m/s (−36.1%). This prevents suction cavitation and provides +1.2 m NPSH margin.
+      title: 'Engineering Evaluation: Multi-Head Collector Chute Expansion (CHG-001)',
+      text: `Based on customer packaging requirements (60 Bags/min with 2.5kg fresh produce charges), expanding the collector chute outlet width from 300 mm to 450 mm (+50%) and steepening the funnel angle from 55° to 62° eliminates product bridging during batch drops.
 
-Flange Geometry Update Required per EN 1092-1 / PN16:
-• Flange OD: 220 mm → 250 mm
-• Bolt Circle (BCD): 180 mm → 210 mm
-• Hole Pattern: 4 × Ø18 mm → 8 × Ø18 mm (M16 bolts)`,
+Key CAD Geometry & Forming Tube Mating Parameters:
+• Chute Outlet Diameter: 300 mm → 450 mm
+• Funnel Cone Angle: 55° → 62° steep cone
+• Top Intake Flange: Ø750 mm with 8 × Ø12 bolt pattern (BCD Ø710 mm)
+• Material Upgrade: Electropolished 316L SS dimpled washdown sheet (Ra < 0.4 µm)`,
       codeSnippet: {
         language: 'csharp',
-        code: `// SOLIDWORKS COM API: Modify Inlet Parameter & Rebuild
+        code: `// SOLIDWORKS COM API: Modify Collector Chute Outlet & Angle
 var swApp = (SldWorks)Marshal.GetActiveObject("SldWorks.Application");
 var swModel = (ModelDoc2)swApp.ActiveDoc;
 
-// 1. Set Inlet Diameter to 125 mm
-var paramInlet = (Dimension)swModel.Parameter("D1@Inlet_Port_Boss");
-paramInlet.SystemValue = 0.125; // SI Meters
+// 1. Set Chute Discharge Outlet Width to 450 mm
+var paramOutlet = (Dimension)swModel.Parameter("D1@Discharge_Neck_Extrude");
+paramOutlet.SystemValue = 0.450; // SI Meters
 
-// 2. Set Bolt Circle Diameter to 210 mm
-var paramBCD = (Dimension)swModel.Parameter("D2@Inlet_Flange_Sketch");
-paramBCD.SystemValue = 0.210;
+// 2. Set Funnel Cone Slope Angle to 62 deg
+var paramAngle = (Dimension)swModel.Parameter("D2@Funnel_Cone_Sketch");
+paramAngle.SystemValue = 62.0 * Math.PI / 180.0;
 
 // 3. Trigger Parametric Rebuild
 bool rebuildOk = swModel.EditRebuild3();`,
@@ -128,65 +129,59 @@ bool rebuildOk = swModel.EditRebuild3();`,
       const q = query.toLowerCase();
       let reply: CadCopilotMessage;
 
-      if (q.includes('flange') || q.includes('pn16') || q.includes('en 1092') || q.includes('bolt') || q.includes('bcd')) {
+      if (q.includes('chute') || q.includes('outlet') || q.includes('funnel') || q.includes('angle') || q.includes('bridging') || q.includes('drop')) {
         reply = {
           id: `cad-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: 'Just now',
-          title: 'EN 1092-1 / Type 11 Suction Flange Specification (DN125 PN16)',
-          text: `Evaluated EN 1092-1 PN16 dimensional requirements for DN125 inlet nozzle:
+          title: 'Weigher Collector Chute & Anti-Bridging Flow Analysis',
+          text: `Evaluated produce discharge dynamics through collector funnel for 60 bags/min packaging rate:
 
-• Flange Outside Diameter (D): 250 mm (vs 220 mm on Baseline DN100)
-• Bolt Circle Diameter (K / BCD): 210 mm (vs 180 mm on Baseline DN100)
-• Number of Bolt Holes: 8 holes (Baseline was 4 holes for PN10/16 DN100)
-• Hole Diameter: 18.0 mm (standard clearance for M16 class 8.8 studs)
-• Flange Raised Face Diameter (d1): 188 mm, 2 mm raised face height
-• Minimum Flange Thickness (C): 20.0 mm (incorporating 2.0 mm corrosion allowance)
+• Cross-Sectional Discharge Area:
+  Baseline Ø300 mm outlet: Area A = 0.0707 m²
+  Proposed Ø450 mm outlet: Area A = 0.1590 m² (+125% area expansion, 2.25× capacity)
 
-Recommendation: Update SOLIDWORKS Feature 'Inlet_Flange_Pattern' from 4-hole to 8-hole instance count on BCD Ø210.`,
+• Angle of Repose & Anti-Bridging Verification:
+  Produce static friction coefficient against electropolished 316L SS: μ = 0.42 (critical slide angle = 22.8°).
+  Steepening funnel cone angle from 55° to 62° ensures gravity acceleration component exceeds cohesive bulk friction by >2.6× margin.
+
+• Drop Clearance & Interfacing:
+  450 mm chute outlet collar enters VFFS Ø192 mm forming collar with 40 mm concentric overlap and zero interference.`,
           metrics: [
-            { label: 'Standard', value: 'EN 1092-1 Type 11', status: 'good' },
-            { label: 'Rating', value: 'PN16 (16.0 bar @ 20°C)', status: 'good' },
-            { label: 'Fasteners', value: '8 × M16 Studs (Grade 8.8)', status: 'good' },
-            { label: 'Gasket Size', value: 'DN125 Ring Gasket', status: 'neutral' },
+            { label: 'Drop Rate', value: '60 Finished Bags/min', status: 'good' },
+            { label: 'Outlet Area', value: '0.159 m² (+125%)', status: 'good' },
+            { label: 'Slope Angle', value: '62° (Passes Anti-Bridging)', status: 'good' },
+            { label: 'Forming Tube Mate', value: 'Concentric 0.0 mm Collision', status: 'good' },
           ],
           codeSnippet: {
             language: 'csharp',
-            code: `// Update Flange Pattern to 8-Hole BCD 210
-var swParamHoles = (Dimension)swModel.Parameter("D1@Inlet_Flange_Pattern");
-swParamHoles.SystemValue = 8; // 8 instances
+            code: `// Modify Collector Chute Dimensions in SOLIDWORKS
+var swParamOutlet = (Dimension)swModel.Parameter("D1@Discharge_Neck_Extrude");
+swParamOutlet.SystemValue = 0.450; // 450 mm
 
-var swParamBCD = (Dimension)swModel.Parameter("D2@Inlet_Flange_Sketch");
-swParamBCD.SystemValue = 0.210; // 210 mm
+var swParamAngle = (Dimension)swModel.Parameter("D2@Funnel_Cone_Sketch");
+swParamAngle.SystemValue = 62.0 * Math.PI / 180.0; // 62 deg
 
 swModel.EditRebuild3();`,
           },
         };
-      } else if (q.includes('stress') || q.includes('wall') || q.includes('16 bar') || q.includes('thickness') || q.includes('pressure')) {
+      } else if (q.includes('jaw') || q.includes('vffs') || q.includes('bag') || q.includes('pouch') || q.includes('width') || q.includes('600')) {
         reply = {
           id: `cad-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: 'Just now',
-          title: 'Casing Wall Stress & Pressure Containment Analysis',
-          text: `Evaluated casing shell under hydrostatic test conditions per ISO 5199 Section 5.1.1:
+          title: 'VFFS Sealing Jaw Carriage Extension Analysis (400 mm → 600 mm)',
+          text: `Evaluated VFFS Bagging Unit (VOLM_VFFS_BAGGING_UNIT_600.SLDASM) jaw extension for 2.5kg family pouches:
 
-• Design Test Pressure (P_test = 1.5 × P_rated): 1.60 MPa (16.0 bar)
-• Inner Volute Diameter at Inlet (D_i): 125.0 mm
-• Nominal Wall Thickness (t): 12.0 mm
-• Material: Cast Iron GG25 (EN-GJL-250)
-• Maximum Allowable Tensile Stress (S_allow): 50.0 MPa (safety factor 5.0 against 250 MPa tensile strength)
-
-Hoop Stress Calculation (Lamé thin-wall equation):
-σ_h = (P × D_i) / (2 × t) = (1.60 × 125) / (2 × 12.0) = 8.33 MPa
-
-Safety Factor: FoS = S_allow / σ_h = 50.0 / 8.33 = 6.0× nominal (2.4× at volute tongue stress concentration).
-
-Verdict: Wall thickness of 12.0 mm is mechanically sound with >2.4× margin against permanent deformation at 16 bar.`,
+• Required Bag Lay-Flat Width: 600 mm (vs 400 mm baseline standard)
+• Crosshead Jaw Span: 650 mm clamp face with dual heated rotary bars
+• Sealing Clamp Pressure: 8.5 kN @ 210°C (servo torque reserve: 38%)
+• Kinematic Envelope: Sealing jaw carriage clears safety guarding enclosure frame with 115 mm margin.`,
           metrics: [
-            { label: 'Test Pressure', value: '16.0 bar (1.60 MPa)', status: 'good' },
-            { label: 'Hoop Stress', value: '8.33 MPa', status: 'good' },
-            { label: 'Allowable Stress', value: '50.0 MPa (GG25)', status: 'good' },
-            { label: 'Factor of Safety', value: '6.0× (Pass)', status: 'good' },
+            { label: 'Target Bag Width', value: '600 mm Lay-Flat', status: 'good' },
+            { label: 'Jaw Span', value: '650 mm Extended Carriage', status: 'good' },
+            { label: 'Sealing Force', value: '8.5 kN @ 210°C', status: 'good' },
+            { label: 'Guard Clearance', value: '115 mm Envelope Margin', status: 'good' },
           ],
         };
       } else if (q.includes('api') || q.includes('com') || q.includes('solidworks') || q.includes('macro') || q.includes('c#') || q.includes('vba') || q.includes('script')) {
@@ -195,7 +190,7 @@ Verdict: Wall thickness of 12.0 mm is mechanically sound with >2.4× margin agai
           sender: 'assistant',
           timestamp: 'Just now',
           title: 'SOLIDWORKS C# COM Interop Automation Routine',
-          text: `Here is the production-ready C# automation snippet to inject the DN125 parametric change, regenerate the FeatureManager DesignTree, and read back verified bounds via native SolidWorks API:`,
+          text: `Here is the production-ready C# automation snippet to inject the 450 mm chute parametric change, regenerate the FeatureManager DesignTree, and read back verified bounds via native SolidWorks API:`,
           codeSnippet: {
             language: 'csharp',
             code: `using SolidWorks.Interop.sldworks;
@@ -208,23 +203,22 @@ public void ExecuteParametricDelta()
     SldWorks swApp = (SldWorks)Marshal.GetActiveObject("SldWorks.Application");
     ModelDoc2 swModel = (ModelDoc2)swApp.ActiveDoc;
 
-    if (swModel.GetPathName().Contains("PUMP_CASING_STD_A.SLDPRT"))
+    if (swModel.GetPathName().Contains("WEIGHER_DISCHARGE_CHUTE_450.SLDPRT"))
     {
-        // 2. Set Inlet Port Diameter dimension (125 mm = 0.125 m)
-        Dimension inletDim = (Dimension)swModel.Parameter("D1@Inlet_Port_Boss");
-        inletDim.SystemValue = 0.125;
+        // 2. Set Chute Outlet dimension (450 mm = 0.450 m)
+        Dimension outletDim = (Dimension)swModel.Parameter("D1@Discharge_Neck_Extrude");
+        outletDim.SystemValue = 0.450;
 
-        // 3. Set Flange Bolt Circle Diameter (210 mm = 0.210 m)
-        Dimension bcdDim = (Dimension)swModel.Parameter("D2@Inlet_Flange_Sketch");
-        bcdDim.SystemValue = 0.210;
+        // 3. Set Funnel Cone Slope Angle (62 degrees)
+        Dimension angleDim = (Dimension)swModel.Parameter("D2@Funnel_Cone_Sketch");
+        angleDim.SystemValue = 62.0 * Math.PI / 180.0;
 
         // 4. Regenerate feature tree and verify zero rebuild errors
-        int rebuildStatus = 0;
         bool rebuildOk = swModel.EditRebuild3();
         
         // 5. Read back verified value from CAD kernel
-        double verifiedValMeters = inletDim.GetSystemValue3((int)swInConfigurationOpts_e.swThisConfiguration, null)[0];
-        Console.WriteLine($"Verified Inlet Bore: {verifiedValMeters * 1000.0:F2} mm");
+        double verifiedValMeters = outletDim.GetSystemValue3((int)swInConfigurationOpts_e.swThisConfiguration, null)[0];
+        Console.WriteLine($"Verified Chute Outlet: {verifiedValMeters * 1000.0:F2} mm");
     }
 }`,
           },
@@ -234,78 +228,29 @@ public void ExecuteParametricDelta()
             { label: 'Safety Sandbox', value: 'Working Copy Enforced', status: 'good' },
           ],
         };
-      } else if (q.includes('velocity') || q.includes('flow') || q.includes('npsh') || q.includes('cavitation') || q.includes('65')) {
+      } else if (q.includes('material') || q.includes('316') || q.includes('stainless') || q.includes('density') || q.includes('sanitary') || q.includes('fda')) {
         reply = {
           id: `cad-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: 'Just now',
-          title: 'Hydraulic Flow Velocity & NPSH Analysis (65 m³/h Duty Point)',
-          text: `Hydraulic evaluation for Customer Duty Point Q = 65 m³/h (0.01806 m³/s):
+          title: 'Metallurgical Assessment: AISI 304 vs 316L Dimpled Stainless Steel',
+          text: `Evaluating proposed change CHG-002 (Material upgrade to electropolished 316L Stainless Steel):
 
-• Baseline DN100 Inlet (Area = 0.00785 m²):
-  Flow Velocity v = Q / A = 0.01806 / 0.00785 = 2.30 m/s
-  (Marginal for chemical dosing; exceeds 2.0 m/s suction guideline)
+• Food Contact Compliance:
+  USDA & FDA 3-A Sanitary Standards mandate 316L SS for high-acid fresh produce washdown.
+  Electropolished dimpled finish (Ra < 0.4 µm) prevents wet produce adhesion and eliminates bacterial harborage points.
 
-• Proposed DN125 Inlet (Area = 0.01227 m²):
-  Flow Velocity v = Q / A = 0.01806 / 0.01227 = 1.47 m/s
-  (Optimal range per HI 9.6.6; reduces inlet friction loss by 59%)
+• Physical Mass Impact on WEIGHER_DISCHARGE_CHUTE_450:
+  304 SS Density: 7,930 kg/m³ → Base Mass: 14.80 kg
+  316L SS Density: 8,000 kg/m³ @ 450 mm: 18.40 kg (+3.60 kg / +24.3%)
 
-• Net Positive Suction Head (NPSH) Impact:
-  Dynamic head loss Δh_friction reduces by ~0.35 m.
-  Total NPSHr improved from 3.8 m to 2.6 m, providing 1.2 m additional margin against cavitation.`,
+• Fabrication & Forming:
+  Dimpled sheet 2.5 mm press-brake formed cone with full-penetration sanitary TIG weld seams ground flush.`,
           metrics: [
-            { label: 'Duty Flow Rate', value: '65.0 m³/h', status: 'neutral' },
-            { label: 'Inlet Velocity', value: '1.47 m/s (−36%)', status: 'good' },
-            { label: 'HI 9.6.6 Limit', value: '< 2.0 m/s (Pass)', status: 'good' },
-            { label: 'NPSH Margin', value: '+1.2 m Safety Head', status: 'good' },
-          ],
-        };
-      } else if (q.includes('material') || q.includes('316') || q.includes('stainless') || q.includes('density') || q.includes('pren')) {
-        reply = {
-          id: `cad-resp-${Date.now()}`,
-          sender: 'assistant',
-          timestamp: 'Just now',
-          title: 'Metallurgical Assessment: GG25 Cast Iron vs AISI 316L Stainless Steel',
-          text: `Evaluating proposed change CHG-002 (Material upgrade to 316L Stainless Steel):
-
-• Corrosion Resistance:
-  GG25 Cast Iron suffers rapid pitting in aggressive chemical dosing (pH < 5 or oxidizers).
-  AISI 316L (1.4404) provides PREN ≥ 23.5 with 2.5% Molybdenum, fully certified for chemical dosing service.
-
-• Physical Mass Impact on PUMP_CASING_STD_A:
-  GG25 Density: 7,200 kg/m³ → Mass @ DN125: 15.14 kg
-  316L Density: 8,000 kg/m³ → Mass @ DN125: 16.82 kg (+1.68 kg / +11.1%)
-
-• Tooling & Pattern Shrinkage:
-  Cast iron pattern shrink allowance = 1.0%.
-  Austenitic stainless pattern shrink = 1.8% to 2.0%. A dedicated stainless casting pattern is required.`,
-          metrics: [
-            { label: 'Proposed Material', value: 'AISI 316L / 1.4404', status: 'good' },
-            { label: 'PREN Score', value: '24.2 (Corrosion Resistant)', status: 'good' },
-            { label: 'Mass Delta', value: '+1.68 kg (+11.1%)', status: 'neutral' },
-            { label: 'Cost Factor', value: '2.8× raw material ratio', status: 'warn' },
-          ],
-        };
-      } else if (q.includes('impeller') || q.includes('trim') || q.includes('head') || q.includes('diameter')) {
-        reply = {
-          id: `cad-resp-${Date.now()}`,
-          sender: 'assistant',
-          timestamp: 'Just now',
-          title: 'Impeller Hydraulic Trim Sizing for 48 m Head',
-          text: `Affinity Law calculation for Impeller Part IMPELLER_VLM_180.SLDPRT:
-
-• Baseline Full Impeller Diameter: D_orig = 180 mm delivers 54 m head @ 2950 RPM
-• Required Duty Head: H_req = 48 m
-• Trim Sizing (Affinity Law H1/H2 = (D1/D2)²):
-  D_trimmed = 180 × √(48 / 54) = 170.6 mm
-  With 2% volute clearance safety correction: D_target = 174.0 mm
-
-Recommendation: Register CHG-002 to turn down outer diameter from 180 mm to 174 mm (−6.0 mm trim).`,
-          metrics: [
-            { label: 'Full Diameter', value: '180.0 mm (54 m head)', status: 'neutral' },
-            { label: 'Trimmed Target', value: '174.0 mm (48 m head)', status: 'good' },
-            { label: 'Shaft Power Draw', value: '14.2 kW (Motor: 18.5 kW)', status: 'good' },
-            { label: 'Safety Margin', value: '23% Motor Overhead', status: 'good' },
+            { label: 'Proposed Material', value: 'AISI 316L (1.4404)', status: 'good' },
+            { label: 'Surface Finish', value: 'Dimpled Ra < 0.4 µm', status: 'good' },
+            { label: 'Mass Delta', value: '+3.60 kg (+24.3%)', status: 'good' },
+            { label: 'Sanitary Standard', value: 'FDA 21 CFR / 3-A Pass', status: 'good' },
           ],
         };
       } else {
@@ -314,11 +259,12 @@ Recommendation: Register CHG-002 to turn down outer diameter from 180 mm to 174 
           sender: 'assistant',
           timestamp: 'Just now',
           title: 'CAD Engineering Assistant Analysis',
-          text: `Analyzed query: "${query}" for ${targetFile?.fileName || 'PUMP_CASING_STD_A.SLDPRT'}.
+          text: `Analyzed query: "${query}" for ${targetFile?.fileName || 'WEIGHER_DISCHARGE_CHUTE_450.SLDPRT'}.
 
 Geometric Status:
-• Inlet Bore: ${displayInletDia} mm (Selected Change: ${selectedChange?.id || 'CHG-001'})
-• Flange Standard: EN 1092-1 PN16 (BCD ${inletBcd} mm, ${boltHoles})
+• Chute Outlet: ${displayOutletWidth} mm (Selected Change: ${selectedChange?.id || 'CHG-001'})
+• Slope Angle: ${displayAngle}° Cone (Anti-Bridging)
+• Top Flange: BCD ${topBcd} mm (${boltHoles})
 • Calculated Mass: ${calculatedMass} kg
 • SolidWorks Rebuild State: Rebuild Clean (0 errors, 0 warnings)
 
@@ -362,17 +308,19 @@ What specific design action or verification would you like to run?`,
     executeDisabledReason = 'Operation is currently executing...';
   }
 
-  // Value determination for the parametric drawing
+  // Value determination for the parametric packaging drawing
   const isModified = existingExec?.status === 'complete' || (previewToggle === 'proposed' && selectedChange?.operation === 'change_dimension');
-  const displayInletDia = isModified && selectedChange?.operation === 'change_dimension' ? Number(selectedChange.proposedValue) : 100;
-  const inletFlangeDia = displayInletDia === 125 ? 250 : 220;
-  const inletBcd = displayInletDia === 125 ? 210 : 180;
-  const boltHoles = displayInletDia === 125 ? '8 × Ø18 (PN16)' : '4 × Ø18 (PN10/16)';
+  const displayOutletWidth = isModified && selectedChange?.operation === 'change_dimension' ? Number(selectedChange.proposedValue) : 300;
+  const isWideChute = displayOutletWidth >= 400;
+  const displayAngle = isWideChute ? 62 : 55;
+  const topFlangeDia = 750;
+  const topBcd = 710;
+  const boltHoles = '8 × Ø12 (BCD 710)';
 
-  // Deterministic Mass Props calculations based on inlet delta
-  const baseMass = targetFile?.mass ?? 14.6;
-  const calculatedMass = displayInletDia === 125 ? (baseMass + 0.54).toFixed(2) : baseMass.toFixed(2);
-  const calculatedVol = displayInletDia === 125 ? '0.00210' : '0.00203';
+  // Deterministic Mass Props calculations based on outlet chute expansion
+  const baseMass = targetFile?.mass ?? 14.8;
+  const calculatedMass = isWideChute ? (baseMass + 3.6).toFixed(2) : baseMass.toFixed(2);
+  const calculatedVol = isWideChute ? '0.00230' : '0.00185';
 
   // Execution runner
   const handleRunExecution = async () => {
@@ -734,7 +682,7 @@ What specific design action or verification would you like to run?`,
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] uppercase font-bold bg-[#F4F5F6] border border-[#DDE2E6] px-1.5 py-0.5 rounded text-[#68737D]">
-                ISO 5199 Standard
+                USDA / FDA 3-A Sanitary
               </span>
             </div>
           </div>
@@ -801,7 +749,7 @@ What specific design action or verification would you like to run?`,
                       previewToggle === 'original' ? 'bg-[#202830] text-white' : 'bg-white text-[#68737D]'
                     )}
                   >
-                    Baseline (Ø100 mm)
+                    Baseline (Ø300 mm)
                   </button>
                   <button
                     onClick={() => setPreviewToggle('proposed')}
@@ -810,7 +758,7 @@ What specific design action or verification would you like to run?`,
                       previewToggle === 'proposed' ? 'bg-[#315D78] text-white' : 'bg-white text-[#68737D]'
                     )}
                   >
-                    Proposed (Ø125 mm)
+                    Proposed (Ø450 mm)
                   </button>
                 </div>
               </div>
@@ -823,8 +771,8 @@ What specific design action or verification would you like to run?`,
               <div className="eng-panel p-4 flex flex-col items-center bg-[#FDFDFE]">
                 <div className="w-full flex items-center justify-between pb-2 mb-2 border-b border-[#EEF1F4] text-[11px]">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-[#315D78]">SECTION A-A · SCALE 1:2</span>
-                    <span className="text-[#68737D]">Volute Casing Radial Cross-Section</span>
+                    <span className="font-mono font-bold text-[#315D78]">SECTION A-A · SCALE 1:5</span>
+                    <span className="text-[#68737D]">Weigher Collector Chute Conical Cross-Section</span>
                   </div>
                   <div className="flex items-center gap-3 text-[#68737D] font-mono text-[10.5px]">
                     <span>PROJECTION: THIRD ANGLE</span>
@@ -850,85 +798,79 @@ What specific design action or verification would you like to run?`,
                     </defs>
 
                     {/* Datum & Centerlines */}
-                    <line x1="20" y1="140" x2="600" y2="140" stroke="#9AAAB5" strokeWidth="0.8" strokeDasharray="14,3,3,3" />
-                    <line x1="160" y1="20" x2="160" y2="260" stroke="#9AAAB5" strokeWidth="0.8" strokeDasharray="14,3,3,3" />
-                    <line x1="440" y1="20" x2="440" y2="260" stroke="#9AAAB5" strokeWidth="0.8" strokeDasharray="14,3,3,3" />
+                    <line x1="310" y1="10" x2="310" y2="270" stroke="#9AAAB5" strokeWidth="0.8" strokeDasharray="14,3,3,3" />
+                    <line x1="40" y1="45" x2="580" y2="45" stroke="#9AAAB5" strokeWidth="0.8" strokeDasharray="14,3,3,3" />
 
-                    {/* Volute Body Section Hatch (Hatched Solid Walls) */}
-                    <path
-                      d="M 60,60 L 60,220 L 260,220 L 260,190 L 120,190 L 120,90 L 260,90 L 260,60 Z"
-                      fill="url(#hatch)"
-                      stroke="#20272E"
-                      strokeWidth="1.6"
-                    />
+                    {/* Top Mounting Flange Rim (Left & Right) */}
+                    <rect x="70" y="35" width="480" height="18" fill="url(#hatch)" stroke="#20272E" strokeWidth="1.6" />
+                    {/* Flange Bolt Holes */}
+                    <circle cx="100" cy="44" r="6" fill="#FFFFFF" stroke="#20272E" strokeWidth="1.2" />
+                    <circle cx="520" cy="44" r="6" fill="#FFFFFF" stroke="#20272E" strokeWidth="1.2" />
 
-                    {/* Volute Chamber Internal Curve */}
-                    <ellipse cx="260" cy="140" rx="90" ry="60" fill="#F8FAFB" stroke="#20272E" strokeWidth="1.5" />
-                    <circle cx="260" cy="140" r="28" fill="#FFFFFF" stroke="#20272E" strokeWidth="1.4" />
-                    <text x="260" y="144" textAnchor="middle" fontSize="10" fill="#68737D" fontFamily="monospace">Ø28 Shaft Bore</text>
+                    {/* Inverted Conical Funnel Walls */}
+                    {/* Dynamic calculation: Outlet width maps 300mm to 120px, 450mm to 180px */}
+                    {(() => {
+                      const outletHalfPx = displayOutletWidth >= 400 ? 90 : 60;
+                      const funnelDropY = 200;
+                      const neckDropY = 245;
 
-                    {/* INLET PORT NOZZLE (Dynamic Geometry Based on Selected Dimension) */}
-                    {/* Upper Nozzle Wall */}
-                    <rect
-                      x="340"
-                      y={140 - (displayInletDia / 2) - 16}
-                      width="180"
-                      height="16"
-                      fill="url(#hatch)"
-                      stroke="#20272E"
-                      strokeWidth="1.6"
-                    />
-                    {/* Lower Nozzle Wall */}
-                    <rect
-                      x="340"
-                      y={140 + (displayInletDia / 2)}
-                      width="180"
-                      height="16"
-                      fill="url(#hatch)"
-                      stroke="#20272E"
-                      strokeWidth="1.6"
-                    />
+                      return (
+                        <g>
+                          {/* Left Sloped Funnel Wall */}
+                          <path
+                            d={`M 110,53 L ${310 - outletHalfPx},${funnelDropY} L ${310 - outletHalfPx},${neckDropY} L ${310 - outletHalfPx - 8},${neckDropY} L ${310 - outletHalfPx - 8},${funnelDropY} L 100,53 Z`}
+                            fill="url(#hatch)"
+                            stroke="#20272E"
+                            strokeWidth="1.6"
+                          />
+                          {/* Right Sloped Funnel Wall */}
+                          <path
+                            d={`M 510,53 L ${310 + outletHalfPx},${funnelDropY} L ${310 + outletHalfPx},${neckDropY} L ${310 + outletHalfPx + 8},${neckDropY} L ${310 + outletHalfPx + 8},${funnelDropY} L 520,53 Z`}
+                            fill="url(#hatch)"
+                            stroke="#20272E"
+                            strokeWidth="1.6"
+                          />
 
-                    {/* Flange Rim (Outer Ring) */}
-                    <rect
-                      x="520"
-                      y={140 - (inletFlangeDia / 2)}
-                      width="24"
-                      height={inletFlangeDia}
-                      fill="url(#hatch)"
-                      stroke="#20272E"
-                      strokeWidth="1.6"
-                    />
+                          {/* Internal Funnel Cavity Guide Line */}
+                          <line x1="110" y1="53" x2={310 - outletHalfPx} y2={funnelDropY} stroke="#315D78" strokeWidth="1.4" strokeDasharray="4,2" />
+                          <line x1="510" y1="53" x2={310 + outletHalfPx} y2={funnelDropY} stroke="#315D78" strokeWidth="1.4" strokeDasharray="4,2" />
 
-                    {/* Bolt Holes on Flange */}
-                    <circle cx="532" cy={140 - (inletBcd / 2)} r="9" fill="#FFFFFF" stroke="#20272E" strokeWidth="1.2" />
-                    <circle cx="532" cy={140 + (inletBcd / 2)} r="9" fill="#FFFFFF" stroke="#20272E" strokeWidth="1.2" />
+                          {/* DIMENSION LEADER: TOP RIM DIAMETER (Ø750 mm) */}
+                          <line x1="70" y1="22" x2="550" y2="22" stroke="#68737D" strokeWidth="1" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
+                          <rect x="270" y="12" width="80" height="18" fill="#FFFFFF" rx="2" stroke="#68737D" strokeWidth="0.6" />
+                          <text x="310" y="25" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#20272E" fontFamily="monospace">
+                            Ø 750 mm (Mount)
+                          </text>
 
-                    {/* Inlet Bore Internal Passage */}
-                    <line x1="340" y1={140 - (displayInletDia / 2)} x2="544" y2={140 - (displayInletDia / 2)} stroke="#20272E" strokeWidth="1.8" />
-                    <line x1="340" y1={140 + (displayInletDia / 2)} x2="544" y2={140 + (displayInletDia / 2)} stroke="#20272E" strokeWidth="1.8" />
+                          {/* DIMENSION LEADER: OUTLET WIDTH (Ø300 or Ø450 mm) */}
+                          <line x1={310 - outletHalfPx} y1={funnelDropY + 20} x2={310 + outletHalfPx} y2={funnelDropY + 20} stroke="#315D78" strokeWidth="1.4" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
+                          <rect x={310 - 55} y={funnelDropY + 10} width="110" height="20" fill="#FFFFFF" rx="2" stroke="#315D78" strokeWidth="1" />
+                          <text x="310" y={funnelDropY + 24} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#315D78" fontFamily="monospace">
+                            Ø {displayOutletWidth} mm OUTLET
+                          </text>
 
-                    {/* DIMENSION LEADER: INLET BORE DIAMETER */}
-                    <line x1="410" y1={140 - (displayInletDia / 2)} x2="410" y2={140 + (displayInletDia / 2)} stroke="#315D78" strokeWidth="1.2" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
-                    <rect x="375" y="130" width="70" height="20" fill="#FFFFFF" rx="2" stroke="#315D78" strokeWidth="0.8" />
-                    <text x="410" y="144" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#315D78" fontFamily="monospace">
-                      Ø{displayInletDia} H7
-                    </text>
+                          {/* FUNNEL ANGLE CALLOUT */}
+                          <g transform={`translate(${310 + outletHalfPx + 35}, 140)`}>
+                            <rect width="130" height="40" fill="#F8FAFB" stroke="#315D78" strokeWidth="0.8" rx="2" />
+                            <text x="8" y="16" fontSize="10" fontWeight="bold" fill="#20272E">
+                              SLOPE ANGLE: {displayAngle}°
+                            </text>
+                            <text x="8" y="30" fontSize="9" fill="#68737D" fontFamily="monospace">
+                              {displayAngle === 62 ? '62° (Anti-Bridging)' : '55° (Standard)'}
+                            </text>
+                          </g>
+                        </g>
+                      );
+                    })()}
 
-                    {/* DIMENSION LEADER: FLANGE OUTER DIAMETER */}
-                    <line x1="565" y1={140 - (inletFlangeDia / 2)} x2="565" y2={140 + (inletFlangeDia / 2)} stroke="#68737D" strokeWidth="1" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
-                    <text x="575" y="144" fontSize="10" fontWeight="bold" fill="#20272E" fontFamily="monospace">
-                      Ø{inletFlangeDia}
-                    </text>
-
-                    {/* Flange Specification Callout Box */}
-                    <g transform="translate(370, 220)">
+                    {/* Material Callout */}
+                    <g transform="translate(60, 215)">
                       <rect width="180" height="42" fill="#F8FAFB" stroke="#315D78" strokeWidth="0.8" rx="2" />
-                      <text x="10" y="16" fontSize="10.5" fontWeight="bold" fill="#20272E">
-                        INLET FLANGE SPECIFICATION
+                      <text x="10" y="16" fontSize="10" fontWeight="bold" fill="#20272E">
+                        FOOD CONTACT METALLURGY
                       </text>
-                      <text x="10" y="32" fontSize="9.5" fill="#68737D" fontFamily="monospace">
-                        {displayInletDia === 125 ? 'DN125 PN16 EN1092-1 / BCD 210' : 'DN100 PN16 EN1092-1 / BCD 180'}
+                      <text x="10" y="32" fontSize="9" fill="#315D78" fontFamily="monospace">
+                        316L SS Dimpled Electropolished
                       </text>
                     </g>
                   </svg>
@@ -936,16 +878,16 @@ What specific design action or verification would you like to run?`,
 
                 <div className="w-full grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-[#EEF1F4] text-[11px]">
                   <div>
-                    <span className="text-[#68737D]">Inlet Bore:</span>{' '}
-                    <strong className="text-[#315D78] font-mono">Ø {displayInletDia} mm (Tolerance H7: +0.040/-0)</strong>
+                    <span className="text-[#68737D]">Chute Outlet:</span>{' '}
+                    <strong className="text-[#315D78] font-mono">Ø {displayOutletWidth} mm (Modified for 60 BPM)</strong>
                   </div>
                   <div>
-                    <span className="text-[#68737D]">Bolt Circle (BCD):</span>{' '}
-                    <strong className="text-[#20272E] font-mono">Ø {inletBcd} mm ({boltHoles})</strong>
+                    <span className="text-[#68737D]">Funnel Slope:</span>{' '}
+                    <strong className="text-[#20272E] font-mono">{displayAngle}° Steep Cone (Anti-Bridging)</strong>
                   </div>
                   <div>
-                    <span className="text-[#68737D]">Flange Thickness:</span>{' '}
-                    <strong className="text-[#20272E] font-mono">{displayInletDia === 125 ? '20 mm' : '18 mm'}</strong>
+                    <span className="text-[#68737D]">Mounting Flange:</span>{' '}
+                    <strong className="text-[#20272E] font-mono">Ø {topFlangeDia} mm ({boltHoles})</strong>
                   </div>
                 </div>
 
@@ -954,7 +896,7 @@ What specific design action or verification would you like to run?`,
                   <div className="flex items-center gap-2">
                     <Sparkles size={14} className="text-[#315D78] flex-shrink-0" />
                     <span className="text-[#20272E]">
-                      <strong>Copilot Design Insight:</strong> Increasing bore to Ø125 mm reduces suction fluid velocity from 2.30 m/s to 1.47 m/s (−36%), preventing cavitation. EN 1092-1 requires 8 × M16 holes on BCD Ø210.
+                      <strong>Copilot Design Insight:</strong> Expanding collector chute outlet to Ø450 mm with 62° slope eliminates produce bridging at 60 bags/min. Direct concentric drop mate to 600mm VFFS forming tube verified.
                     </span>
                   </div>
                   <button
@@ -971,12 +913,10 @@ What specific design action or verification would you like to run?`,
             {/* VIEW 2: 3D SOLIDWORKS PARAMETRIC CAD MODEL VIEWPORT */}
             {activeCenterView === 'model3d' && (
               <SolidWorks3DViewer
-                inletDiameter={displayInletDia}
-                flangeDiameter={inletFlangeDia}
-                bcd={inletBcd}
-                boltHolesCount={displayInletDia === 125 ? 8 : 4}
-                flangeThickness={displayInletDia === 125 ? 20 : 18}
-                material={targetFile?.material?.includes('316') ? 'stainless_316' : 'cast_iron'}
+                chuteOutletWidth={displayOutletWidth}
+                chuteAngleDeg={displayAngle}
+                topFlangeDiameter={topFlangeDia}
+                material={targetFile?.material?.includes('316') ? 'stainless_316' : 'stainless_304'}
                 isModified={isModified}
               />
             )}
@@ -999,12 +939,12 @@ What specific design action or verification would you like to run?`,
                     { id: 'front_plane', name: 'Front Plane', type: 'Reference Geometry', icon: Compass, status: 'Visible' },
                     { id: 'top_plane', name: 'Top Plane', type: 'Reference Geometry', icon: Compass, status: 'Visible' },
                     { id: 'right_plane', name: 'Right Plane', type: 'Reference Geometry', icon: Compass, status: 'Visible' },
-                    { id: 'material', name: `Material <${targetFile?.material || 'Cast Iron GG25'}>`, type: 'Physical Property', icon: Scale, status: 'Assigned' },
-                    { id: 'Inlet_Port_Boss', name: 'Inlet_Port_Boss', type: 'Boss-Extrude1', icon: FileCode, status: 'MODIFIED (Active Change)', isTarget: true },
-                    { id: 'Outlet_Port_Boss', name: 'Outlet_Port_Boss', type: 'Boss-Extrude2', icon: FileCode, status: 'Regenerated OK' },
-                    { id: 'Volute_Chamber', name: 'Volute_Chamber', type: 'Boss-Extrude3', icon: FileCode, status: 'Regenerated OK' },
-                    { id: 'DrainPort_M12', name: 'DrainPort_M12', type: 'Hole Wizard (M12×1.5)', icon: Sliders, status: 'Regenerated OK' },
-                    { id: 'Rib_Pattern_4x', name: 'Rib_Pattern_4x', type: 'Linear Pattern1', icon: Hash, status: 'Regenerated OK' },
+                    { id: 'material', name: `Material <${targetFile?.material || '316L Stainless Steel'}>`, type: 'Physical Property', icon: Scale, status: 'Assigned' },
+                    { id: 'Funnel_Cone_Extrude', name: 'Funnel_Cone_Extrude', type: 'Boss-Extrude1', icon: FileCode, status: 'MODIFIED (Active Change)', isTarget: true },
+                    { id: 'Discharge_Neck_Extrude', name: 'Discharge_Neck_Extrude', type: 'Boss-Extrude2', icon: FileCode, status: 'Regenerated OK' },
+                    { id: 'Top_Mounting_Flange_Boss', name: 'Top_Mounting_Flange_Boss', type: 'Boss-Extrude3', icon: FileCode, status: 'Regenerated OK' },
+                    { id: 'Flange_Bolt_Pattern_8x', name: 'Flange_Bolt_Pattern_8x', type: 'Circular Pattern1', icon: Hash, status: 'Regenerated OK' },
+                    { id: 'Dimple_Surface_Pattern', name: 'Dimple_Surface_Pattern', type: 'Pattern-Fill1', icon: Sliders, status: 'Regenerated OK' },
                   ].map(item => (
                     <div
                       key={item.id}
@@ -1065,29 +1005,29 @@ What specific design action or verification would you like to run?`,
                       <td className="font-medium text-[#20272E]">Total Net Mass</td>
                       <td className="font-mono">{baseMass.toFixed(2)} kg</td>
                       <td className="font-mono font-bold text-[#315D78]">{calculatedMass} kg</td>
-                      <td className="font-mono text-[#2D7A4F]">+0.54 kg (+3.7%)</td>
-                      <td className="text-[11.5px] text-[#68737D]">Within allowable foundation payload limit (&lt;25 kg)</td>
+                      <td className="font-mono text-[#2D7A4F]">+3.60 kg (+24.3%)</td>
+                      <td className="text-[11.5px] text-[#68737D]">Within allowable mezzanine payload limit (&lt;50 kg)</td>
                     </tr>
                     <tr>
                       <td className="font-medium text-[#20272E]">Bounding Volume</td>
-                      <td className="font-mono">0.00203 m³</td>
+                      <td className="font-mono">0.00185 m³</td>
                       <td className="font-mono font-bold text-[#315D78]">{calculatedVol} m³</td>
-                      <td className="font-mono text-[#2D7A4F]">+0.00007 m³</td>
-                      <td className="text-[11.5px] text-[#68737D]">Inlet boss envelope widened by 12.5 mm radially</td>
+                      <td className="font-mono text-[#2D7A4F]">+0.00045 m³</td>
+                      <td className="text-[11.5px] text-[#68737D]">Chute discharge throat widened by 75 mm radially</td>
                     </tr>
                     <tr>
-                      <td className="font-medium text-[#20272E]">Inlet Flange BCD</td>
-                      <td className="font-mono">180 mm</td>
-                      <td className="font-mono font-bold text-[#315D78]">{inletBcd} mm</td>
-                      <td className="font-mono text-[#B42318]">+30 mm</td>
-                      <td className="text-[11.5px] text-[#B42318] font-medium">Customer piping mating flange must be DN125 PN16</td>
+                      <td className="font-medium text-[#20272E]">Chute Outlet Width</td>
+                      <td className="font-mono">300 mm</td>
+                      <td className="font-mono font-bold text-[#315D78]">{displayOutletWidth} mm</td>
+                      <td className="font-mono text-[#2D7A4F]">+150 mm (+50%)</td>
+                      <td className="text-[11.5px] text-[#2D7A4F] font-medium">Guarantees 60 BPM portion drop with zero bridging</td>
                     </tr>
                     <tr>
-                      <td className="font-medium text-[#20272E]">Bolt Hole Quantity</td>
-                      <td className="font-mono">4 × M16</td>
-                      <td className="font-mono font-bold text-[#315D78]">8 × M16</td>
-                      <td className="font-mono text-[#B42318]">+4 Holes</td>
-                      <td className="text-[11.5px] text-[#68737D]">Drawing bolt circle pattern callout requires drafting review</td>
+                      <td className="font-medium text-[#20272E]">Funnel Cone Slope</td>
+                      <td className="font-mono">55°</td>
+                      <td className="font-mono font-bold text-[#315D78]">{displayAngle}°</td>
+                      <td className="font-mono text-[#2D7A4F]">+7°</td>
+                      <td className="text-[11.5px] text-[#68737D]">Steep slide angle prevents fresh produce hang-up</td>
                     </tr>
                   </tbody>
                 </table>
