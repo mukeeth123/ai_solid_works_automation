@@ -142,11 +142,11 @@ export default function EnquiryWorkspace() {
 
     await new Promise(r => setTimeout(r, 400));
     setIngestProgress(45);
-    setIngestStatusText(`Parsing Section 3 (Hydraulic Duty) & Section 4 (Metallurgy)...`);
+    setIngestStatusText(`Parsing Section 2 (Packaging Rate & Speed) & Section 3 (Bag Dimensions)...`);
 
     await new Promise(r => setTimeout(r, 500));
     setIngestProgress(80);
-    setIngestStatusText(`Extracting parameters and evaluating ATEX Group II Zone 1 criteria...`);
+    setIngestStatusText(`Extracting parameters and evaluating 316L metallurgy & IP67 washdown criteria...`);
 
     await new Promise(r => setTimeout(r, 400));
     setIngestProgress(100);
@@ -157,8 +157,8 @@ export default function EnquiryWorkspace() {
     const now = new Date().toISOString();
     const populatedEnquiry: Enquiry = {
       ...enquiry,
-      title: 'Stainless Steel Pump Unit — Chemical Dosing Service',
-      description: 'Customer requires a centrifugal pump unit for chemical dosing service. Key differences from standard product: stainless steel wetted parts, increased flow rate, higher discharge pressure, and ATEX-rated motor. Preliminary customer specification received; structural and ATEX assessments are outstanding.',
+      title: 'Volm High-Speed Automated Produce Packaging & Weighing System (Model: VOLM PACK-LINE 4000)',
+      description: 'Custom packaging equipment project: high-speed multi-head combination weighing, VFFS pouch bagging, inline checkweighing and rotary accumulation line comprising 10 equipment assemblies (8 standard reuse + 2 modified).',
       status: 'in_progress',
       requirements: SAMPLE_SPEC_REQUIREMENTS,
       sourceDocuments: [
@@ -212,75 +212,63 @@ export default function EnquiryWorkspace() {
   }
 
   // Quick Demo Templates to prefill fields instantly for the client
-  function applyTemplate(type: 'inlet' | 'flow' | 'pressure' | 'material' | 'temp') {
+  function applyTemplate(type: 'speed' | 'bag_width' | 'material' | 'ip_rating') {
     if (!modalReq) return;
-    if (type === 'inlet') {
+    if (type === 'speed') {
       setModalReq({
         ...modalReq,
-        name: 'Inlet Port Nominal Diameter',
+        name: 'Packaging Line Speed',
+        category: 'capacity_load',
+        value: 60,
+        unit: 'bags/min (BPM)',
+        priority: 'critical',
+        status: 'confirmed',
+        source: 'Customer Technical Scope Rev 1',
+        sourceLocation: 'Section 2.1',
+        description: 'Guaranteed packaging rate for 500g–2.5kg fresh produce/bulk product pouches.',
+        notes: 'Requires collector chute expansion to prevent product bridging at high speed.',
+      });
+    } else if (type === 'bag_width') {
+      setModalReq({
+        ...modalReq,
+        name: 'Maximum Bag Width Dimension',
         category: 'dimensions',
-        value: 125,
-        unit: 'mm (DN125)',
+        value: 600,
+        unit: 'mm',
         priority: 'critical',
         status: 'confirmed',
-        source: 'Process Flow Diagram P&ID-402',
-        sourceLocation: 'Sheet 2',
-        description: 'Suction nozzle connection must match plant header size.',
-        notes: 'Requires DN125 PN16 flange rating per EN 1092-1.',
-      });
-    } else if (type === 'flow') {
-      setModalReq({
-        ...modalReq,
-        name: 'Design Volumetric Flow Rate',
-        category: 'capacity_load',
-        value: 65,
-        unit: 'm³/h',
-        priority: 'critical',
-        status: 'confirmed',
-        source: 'Customer Data Sheet Rev B',
-        sourceLocation: 'Item 4.1',
-        description: 'Continuous duty volumetric transfer rate.',
-        notes: 'Customer confirms no duty margin included in this rate.',
-      });
-    } else if (type === 'pressure') {
-      setModalReq({
-        ...modalReq,
-        name: 'Minimum Discharge Head',
-        category: 'capacity_load',
-        value: 48,
-        unit: 'm (4.7 bar)',
-        priority: 'critical',
-        status: 'confirmed',
-        source: 'System Hydraulic Curve Sheet',
-        sourceLocation: 'Page 3',
-        description: 'Total dynamic head required at operating flow.',
+        source: 'Customer Specification Rev 1',
+        sourceLocation: 'Section 3.2',
+        description: 'Required pouch flat width for 2.5kg family size fresh produce pack.',
+        notes: 'Requires VFFS jaw crosshead stroke extended to 600 mm.',
       });
     } else if (type === 'material') {
       setModalReq({
         ...modalReq,
-        name: 'Wetted Metallurgy Specification',
+        name: 'Product Contact Surface Metallurgy',
         category: 'materials',
-        value: '316L Stainless Steel (1.4404)',
+        value: '316L Stainless Steel (Electropolished)',
         unit: '',
         priority: 'critical',
         status: 'confirmed',
-        source: 'Corrosion Management Spec',
-        sourceLocation: 'Section 4.1',
-        description: 'All wetted casing, impeller and shaft components.',
-        notes: 'Cast iron not acceptable due to chemical dosing acid content.',
+        source: 'Sanitary Food Grade Scope',
+        sourceLocation: 'Section 5.1',
+        description: 'Sanitary food grade stainless steel for all contact funnels, pans and chutes.',
+        notes: 'Ra <= 0.4 µm electropolished finish required.',
       });
-    } else if (type === 'temp') {
+    } else if (type === 'ip_rating') {
       setModalReq({
         ...modalReq,
-        name: 'Maximum Fluid Temperature',
+        name: 'Washdown Ingress Protection Rating',
         category: 'operating_conditions',
-        value: 75,
-        unit: '°C',
-        priority: 'high',
+        value: 'IP67 Full Washdown',
+        unit: '',
+        priority: 'critical',
         status: 'confirmed',
-        source: 'Process Condition Sheet',
-        sourceLocation: 'Section 2.2',
-        description: 'Sustained liquid temperature at pump intake.',
+        source: 'Customer Specification Rev 1',
+        sourceLocation: 'Section 4.4',
+        description: 'Sanitary washdown rating for weigher buckets, load cells, and electrical actuators.',
+        notes: 'Sealed stainless stepper enclosures with dual O-rings.',
       });
     }
   }
@@ -915,24 +903,17 @@ export default function EnquiryWorkspace() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => applyTemplate('inlet')}
+                  onClick={() => applyTemplate('speed')}
                   className="text-[11px] bg-white hover:bg-[#EBF2F7] text-[#315D78] px-2 py-0.5 rounded border border-[#C5D9E8] font-medium whitespace-nowrap"
                 >
-                  Inlet DN125
+                  Speed 60 BPM
                 </button>
                 <button
                   type="button"
-                  onClick={() => applyTemplate('flow')}
+                  onClick={() => applyTemplate('bag_width')}
                   className="text-[11px] bg-white hover:bg-[#EBF2F7] text-[#315D78] px-2 py-0.5 rounded border border-[#C5D9E8] font-medium whitespace-nowrap"
                 >
-                  Flow 65 m³/h
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyTemplate('pressure')}
-                  className="text-[11px] bg-white hover:bg-[#EBF2F7] text-[#315D78] px-2 py-0.5 rounded border border-[#C5D9E8] font-medium whitespace-nowrap"
-                >
-                  Head 48 m
+                  Width 600 mm
                 </button>
                 <button
                   type="button"
@@ -940,6 +921,13 @@ export default function EnquiryWorkspace() {
                   className="text-[11px] bg-white hover:bg-[#EBF2F7] text-[#315D78] px-2 py-0.5 rounded border border-[#C5D9E8] font-medium whitespace-nowrap"
                 >
                   316L SS Wetted
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyTemplate('ip_rating')}
+                  className="text-[11px] bg-white hover:bg-[#EBF2F7] text-[#315D78] px-2 py-0.5 rounded border border-[#C5D9E8] font-medium whitespace-nowrap"
+                >
+                  IP67 Washdown
                 </button>
               </div>
             )}
@@ -1139,7 +1127,7 @@ export default function EnquiryWorkspace() {
                 </label>
                 <input
                   className="eng-input font-medium"
-                  placeholder="e.g. High-Pressure Boiler Feed Pump Unit..."
+                  placeholder="e.g. Volm High-Speed Automated Produce Packaging & Weighing System..."
                   value={newEnquiryTitle}
                   onChange={e => setNewEnquiryTitle(e.target.value)}
                   autoFocus

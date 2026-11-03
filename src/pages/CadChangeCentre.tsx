@@ -1167,7 +1167,7 @@ What specific design action or verification would you like to run?`,
               <div className="p-2.5 bg-[#F8FAFB] border-b border-[#EEF1F4] flex items-center justify-between text-[11px]">
                 <div>
                   <span className="font-semibold text-[#20272E]">Target: </span>
-                  <span className="font-mono text-[#315D78]">{targetFile?.fileName || 'PUMP_CASING_STD_A.SLDPRT'}</span>
+                  <span className="font-mono text-[#315D78]">{targetFile?.fileName || 'WEIGHER_DISCHARGE_CHUTE_450.SLDPRT'}</span>
                   <span className="text-[#68737D]"> ({selectedChange?.targetConfiguration || 'DN125'})</span>
                 </div>
                 <span className="text-[10px] bg-[#EBF5EF] text-[#2D7A4F] px-1.5 py-0.5 rounded font-mono font-medium">
@@ -1498,7 +1498,7 @@ What specific design action or verification would you like to run?`,
               <div className="p-3 bg-[#F8FAFB] border border-[#DDE2E6] rounded font-mono text-[11px] text-[#20272E] space-y-1">
                 <div className="text-[#68737D]">// Example COM automation call handled by connector:</div>
                 <div>ISldWorks swApp = (ISldWorks)Marshal.GetActiveObject("SldWorks.Application");</div>
-                <div>IModelDoc2 swModel = swApp.ActivateDoc3("PUMP_CASING_STD_A.SLDPRT", false, 0, ref errors);</div>
+                <div>IModelDoc2 swModel = swApp.ActivateDoc3("WEIGHER_DISCHARGE_CHUTE_450.SLDPRT", false, 0, ref errors);</div>
                 <div>IParameter swParam = swModel.Parameter("D1@Inlet_Port_Boss");</div>
                 <div className="text-[#315D78]">swParam.SystemValue = 0.125; // 125 mm in meters</div>
                 <div>int rebuildResult = swModel.EditRebuild3();</div>

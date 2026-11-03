@@ -327,8 +327,8 @@ export default function MainAssembly() {
             items={items}
             selectedItemId={selectedItemId}
             onSelectItem={handleSelectItem}
-            isPumpModified={true}
-            isSkidModified={true}
+            isWeigherModified={true}
+            isBaggerModified={true}
           />
         </div>
 
