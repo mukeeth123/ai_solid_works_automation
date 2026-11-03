@@ -29,6 +29,15 @@ import { EngineeringChatDrawer } from './EngineeringChatDrawer';
 
 // ---- Navigation items ----
 
+export const WORKFLOW_PIPELINE = [
+  { step: 1, path: '/enquiries', label: '1. Requirements Brief' },
+  { step: 2, path: '/library', label: '2. Engineering Library' },
+  { step: 3, path: '/compare', label: '3. Reuse & Comparison' },
+  { step: 4, path: '/cad-change', label: '4. CAD Change Centre' },
+  { step: 5, path: '/main-assembly', label: '5. Main Assembly' },
+  { step: 6, path: '/review', label: '6. Review & Release' },
+];
+
 const NAV_ITEMS = [
   { path: '/enquiries', label: '1. Requirements Brief', icon: FileText, step: '1' },
   { path: '/library', label: '2. Engineering Library', icon: Library, step: '2' },
@@ -42,14 +51,14 @@ const NAV_ITEMS = [
 // ---- Breadcrumb mapping ----
 
 const ROUTE_BREADCRUMBS: Record<string, string[]> = {
-  '/enquiries': ['VOLM Engineering Intelligence', '1. Customer Requirements & Project Brief'],
-  '/library': ['VOLM Engineering Intelligence', '2. Engineering Library (Parts & Assemblies)'],
-  '/compare': ['VOLM Engineering Intelligence', '3. Component Reuse & Comparison (10 Assemblies)'],
-  '/reuse-comparison': ['VOLM Engineering Intelligence', '3. Component Reuse & Comparison (10 Assemblies)'],
-  '/cad-change': ['VOLM Engineering Intelligence', '4. CAD Change Centre (Parametric Rebuilds)'],
-  '/main-assembly': ['VOLM Engineering Intelligence', '5. Main Assembly (Master Skid Integration)'],
-  '/review': ['VOLM Engineering Intelligence', '6. Engineering Validation & Release'],
-  '/history': ['VOLM Engineering Intelligence', '7. Traceability & Activity History'],
+  '/enquiries': ['VOLM Engineering Intelligence', '1. Requirements Brief'],
+  '/library': ['VOLM Engineering Intelligence', '2. Engineering Library'],
+  '/compare': ['VOLM Engineering Intelligence', '3. Reuse & Comparison'],
+  '/reuse-comparison': ['VOLM Engineering Intelligence', '3. Reuse & Comparison'],
+  '/cad-change': ['VOLM Engineering Intelligence', '4. CAD Change Centre'],
+  '/main-assembly': ['VOLM Engineering Intelligence', '5. Main Assembly'],
+  '/review': ['VOLM Engineering Intelligence', '6. Review & Release'],
+  '/history': ['VOLM Engineering Intelligence', '7. Activity History'],
 };
 
 // ---- Shell Layout ----
@@ -264,6 +273,58 @@ export function AppShell({ children }: AppShellProps) {
             )}
           </div>
         </header>
+
+        {/* Interactive Process Pipeline (Steps 1 through 6) */}
+        <div className="bg-[#1C2128] text-white px-4 py-1.5 flex items-center justify-between border-b border-[#2D3A47] text-[11px] overflow-x-auto flex-shrink-0">
+          <div className="flex items-center gap-1.5 min-w-max">
+            <span className="text-[#8B949E] text-[10px] font-bold uppercase tracking-wider mr-1">Engineering Flow:</span>
+            {WORKFLOW_PIPELINE.map((item, idx) => {
+              const isActive = location.pathname === item.path || (item.path === '/compare' && location.pathname === '/reuse-comparison');
+              const isPast = (
+                (location.pathname === '/library' && item.step < 2) ||
+                ((location.pathname === '/compare' || location.pathname === '/reuse-comparison') && item.step < 3) ||
+                (location.pathname === '/cad-change' && item.step < 4) ||
+                (location.pathname === '/main-assembly' && item.step < 5) ||
+                (location.pathname === '/review' && item.step < 6) ||
+                (location.pathname === '/history')
+              );
+
+              return (
+                <div key={item.step} className="flex items-center gap-1.5">
+                  <NavLink
+                    to={item.path}
+                    className={cn(
+                      'px-2 py-0.5 rounded text-[11px] font-medium transition-colors flex items-center gap-1',
+                      isActive
+                        ? 'bg-[#315D78] text-white font-bold shadow-xs'
+                        : isPast
+                        ? 'text-[#85C9A1] hover:text-white hover:bg-[#2A3441]'
+                        : 'text-[#8B949E] hover:text-[#C9D1D9] hover:bg-[#2A3441]'
+                    )}
+                  >
+                    <span>{item.label}</span>
+                    {isPast && !isActive && <span className="text-[10px] text-[#2D7A4F]">✓</span>}
+                  </NavLink>
+                  {idx < WORKFLOW_PIPELINE.length - 1 && (
+                    <span className="text-[#4E5D6C] text-[11px]">→</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 text-[10.5px] text-[#8B949E] min-w-max pl-4">
+            <NavLink
+              to="/history"
+              className={cn(
+                'px-2 py-0.5 rounded hover:text-white transition-colors flex items-center gap-1',
+                location.pathname === '/history' ? 'bg-[#315D78] text-white font-bold' : 'text-[#8B949E]'
+              )}
+            >
+              <span>7. Activity History</span>
+            </NavLink>
+          </div>
+        </div>
 
         {/* Demo notice */}
         <div className="demo-notice flex-shrink-0">

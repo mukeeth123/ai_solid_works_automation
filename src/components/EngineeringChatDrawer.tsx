@@ -58,10 +58,10 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
       id: 'msg-init-1',
       sender: 'assistant',
       timestamp: new Date().toISOString(),
-      text: `VOLM Engineering Copilot initialized. I have indexed active project ${enquiry?.reference || 'ENQ-2025-0047'}, 10 Equipment Assemblies (8 Standard Reuse + 2 Modified), 4 Engineering Changes, and the Main Skid Assembly.\n\nSelect any quick prompt below or enter an engineering query regarding component reuse, CAD modifications, kinematic mates, or design validation.`,
+      text: `VOLM Engineering Copilot initialized. I have indexed active project ${enquiry?.reference || 'ENQ-2025-0047'}, 10 Packaging Equipment Assemblies (8 Standard Reuse + 2 Modified), 4 Engineering Changes, and the Master Automated Packaging Line Assembly.\n\nSelect any practical prompt below or enter an engineering query regarding component reuse, CAD modifications, kinematic mates, or design validation.`,
       referencedEntities: [
-        { type: 'assembly', label: 'MAIN_PROCESS_SKID_ASSY.SLDASM', actionPath: '/main-assembly' },
-        { type: 'requirement', label: enquiry?.reference || 'Active Enquiry', actionPath: '/enquiries' },
+        { type: 'assembly', label: 'VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM', actionPath: '/main-assembly' },
+        { type: 'requirement', label: enquiry?.reference || 'Active Brief', actionPath: '/enquiries' },
       ],
     },
   ]);
@@ -96,27 +96,26 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
 
       // 1. "Find reusable equipment."
       if (q.includes('find') || q.includes('reusable') || q.includes('reuse candidate')) {
-        const standardAssys = mainItems.filter(i => i.category === 'standard_reuse');
         reply = {
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
           text: `Found 8 Standard Equipment Assemblies suitable for 100% Direct Library Reuse:\n\n` +
-            `1. VLM-MOT-IE4-15K (ABB 15 kW IE4 Motor): Frame 160M, 1475 RPM, ATEX Zone 1. Direct match for 65 m³/h @ 48m duty.\n` +
-            `2. VLM-CPL-GRID-20 (Grid Coupling): Taper-grid with 140 mm DBSE spacer for cartridge seal maintenance.\n` +
-            `3. VLM-VLV-SUC-125 (Suction Valve DN125): PN16 triple-offset wafer butterfly valve with manual gearbox.\n` +
-            `4. VLM-VLV-DIS-100 (Discharge Valve DN100): Dual-plate non-slam check valve + throttling globe valve (PN25).\n` +
-            `5. VLM-SPL-SUC-125 (Suction Spool DN125): Fabricated 316L SS eccentric reducer spool with drain boss.\n` +
-            `6. VLM-SPL-DIS-100 (Discharge Spool DN100): Heavy-wall 316L SS manifold with dual 1/2" NPT instrument ports.\n` +
-            `7. VLM-BFR-53A-12L (Plan 53A Seal System): API 682 12L barrier fluid reservoir vessel with level transmitter.\n` +
-            `8. VLM-ENC-IP66-SS (Sensor Enclosure): IP66 316SS junction box for vibration accelerometer & RTD PT100 wiring.\n\n` +
-            `Assessment: These 8 assemblies require ZERO geometric modifications and are verified in the Main Assembly workspace.`,
+            `1. VLM-CNV-INF-3000: Infeed Incline Cleated Elevator Conveyor (3.0 m, FDA blue belt, 75 BPM capacity).\n` +
+            `2. VLM-FEED-VIB-800: Electromagnetic Vibratory Cross-Feed Dispensing Tray (800 mm, 304 SS washdown).\n` +
+            `3. VLM-PRN-TTO-MNT: Thermal Transfer Overprinter Date Coder Web Mount (53 mm printhead, 300 DPI).\n` +
+            `4. VLM-SEAL-ROT-SRV: Dual-Axis Rotary Servo Sealing & Cut-Off Jaw Mechanism (PID temperature control).\n` +
+            `5. VLM-CNV-TAK-1800: Packaged Bag Takeaway Elevator Conveyor (1.8 m length, rough-top grip belt).\n` +
+            `6. VLM-CHK-DYN-600: Dynamic Inline High-Speed Checkweigher with Pneumatic Flipper Reject Arm.\n` +
+            `7. VLM-TBL-ROT-1200: Rotary Accumulation & Hand Pack-Off Inspection Turntable (Ø1200 mm 304 SS disc).\n` +
+            `8. VLM-GRD-LEX-CELL: Interlocked Clear Lexan Safety Guarding Cell Enclosure (ISO 13849-1 Cat 4 / PLe).\n\n` +
+            `Assessment: These 8 packaging assemblies require ZERO geometric modifications and are fully verified in the Main Assembly workspace.`,
           referencedEntities: [
-            { type: 'assembly', label: '8 Standard Assemblies', actionPath: '/compare' },
-            { type: 'assembly', label: 'Main Assembly Workspace', actionPath: '/main-assembly' },
+            { type: 'assembly', label: '8 Standard Packaging Assemblies', actionPath: '/compare' },
+            { type: 'assembly', label: '5. Main Assembly', actionPath: '/main-assembly' },
           ],
           suggestedAction: {
-            label: 'Inspect Reuse & Comparison Matrix',
+            label: 'Inspect 3. Reuse & Comparison',
             path: '/compare',
           },
         };
@@ -127,21 +126,21 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Identified 2 Equipment Assemblies requiring parametric engineering modifications:\n\n` +
-            `1. ASM-001: PUMP_UNIT_STD_A.SLDASM (Centrifugal Feed Pump Unit)\n` +
-            `   • Baseline: DN100 suction inlet / 45 m³/h / Cast Iron GG25 / 32 m head.\n` +
-            `   • Required Modifications: Enlarge suction nozzle to DN125 (8-hole PN16 BCD 210mm) to lower inlet velocity to 1.47 m/s (+1.2m NPSH margin), assign 316L Stainless Steel metallurgy for chemical dosing, and trim impeller diameter to 188 mm for 48m head.\n\n` +
-            `2. ASM-004: SKID_BASE_FRAME_HEAVY.SLDASM (Structural Skid Base Frame)\n` +
-            `   • Baseline: 1200 mm length / 4 cross-members / 11 kW motor footprint.\n` +
-            `   • Required Modifications: Extend longitudinal C-channel girders from 1200 mm to 1450 mm (+250 mm) to support upgraded 15 kW motor frame (160M) and DN125 pipe spool anchor loads; shift motor mounting pad slots by +180 mm; increase stiffener ribs from 4 to 6.\n\n` +
-            `Both modifications have approved change orders and have been verified via simulated CAD rebuild.`,
+          text: `Identified 2 Packaging Equipment Assemblies requiring parametric engineering modifications:\n\n` +
+            `1. ASM-001: VOLM_MULTIHEAD_WEIGHER_14H.SLDASM (14-Head Radial Combination Weigher)\n` +
+            `   • Baseline: 300 mm discharge chute outlet / 55° cone slope / 40 BPM limit / 304 SS.\n` +
+            `   • Required Modifications: Expand collector funnel outlet from 300 mm to 450 mm (+50%) and steepen cone angle to 62° to prevent produce bridging at 60 bags/min. Upgrade product-contact pans to electropolished 316L SS dimpled sheet.\n\n` +
+            `2. ASM-002: VOLM_VFFS_BAGGING_UNIT_600.SLDASM (Continuous-Motion VFFS Bagging Unit)\n` +
+            `   • Baseline: 400 mm maximum pouch width / Ø128 mm forming tube / 450 mm carriage span.\n` +
+            `   • Required Modifications: Extend crosshead sealing jaw stroke and carriage width to 600 mm for 2.5kg family-pack pouches. Expand forming collar to Ø192 mm shoulder.\n\n` +
+            `Both modifications have approved change orders and have been verified via simulated CAD rebuild in the CAD Change Centre.`,
           referencedEntities: [
-            { type: 'change', label: 'CHG-001 (DN125 Inlet)', actionPath: '/cad-change' },
-            { type: 'change', label: 'CHG-003 (Skid 1450mm Length)', actionPath: '/cad-change' },
+            { type: 'change', label: 'CHG-001 (Weigher 450mm Chute)', actionPath: '/cad-change' },
+            { type: 'change', label: 'CHG-003 (VFFS 600mm Jaw Stroke)', actionPath: '/cad-change' },
           ],
           suggestedAction: {
-            label: 'Review in Change Planner',
-            path: '/compare',
+            label: 'Review in 4. CAD Change Centre',
+            path: '/cad-change',
           },
         };
       }
@@ -151,21 +150,20 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Cross-Assembly Traceability & Dependency Analysis for Main Process Skid:\n\n` +
-            `• Suction Fluid Chain Dependency:\n` +
-            `  Customer Ingestion Pipe → Spool SPL-SUC-125 (DN125) → Butterfly Valve VLV-SUC-125 (DN125) → Pump Casing Inlet (Modified DN125 PN16).\n` +
-            `  Dependency Rule: Bolt circle diameter must match BCD Ø210 with 8 × M16 studs.\n\n` +
-            `• Drive Train Kinematic Dependency:\n` +
-            `  Skid Frame (Modified 1450mm) → Motor Foot Pads (Pedestal +180mm) → Motor Shaft (Ø42mm) → Grid Coupling (140mm Spacer) → Pump Shaft (Ø28mm).\n` +
-            `  Dependency Rule: Concentric shaft alignment must remain within 0.05 mm TIR (verified: 0.018 mm).\n\n` +
-            `• Boundary Limit Dependency:\n` +
-            `  Skid base length extension (1200 → 1450 mm) results in overall skid envelope of 1720 × 780 mm, maintaining +130 mm margin inside the customer civil foundation constraint (1850 × 850 mm).`,
+          text: `Cross-Assembly Traceability & Dependency Analysis for Automated Packaging Line:\n\n` +
+            `• Product Gravity Flow Transfer Chain:\n` +
+            `  Infeed Cleated Conveyor (2850 mm head) → Vibratory Pan Feeder (800 mm) → Weigher Top Dispersion Cone → 14 Weigh Buckets → Modified 450 mm Funnel Chute → VFFS 600 mm Forming Tube → Rotary Servo Jaws → Takeaway Conveyor → Dynamic Checkweigher → Rotary Accumulation Table.\n` +
+            `  Dependency Rule: Concentric drop alignment between 450mm weigher chute and VFFS forming collar must maintain 0.0 mm interference (verified: 0.012 mm alignment).\n\n` +
+            `• Kinematic Throughput Synchronization:\n` +
+            `  Weigher batch discharge and VFFS rotary sealing jaw cycle rate synchronized at 60 bags/min.\n\n` +
+            `• Plant Bay Civil Boundary Dependency:\n` +
+            `  Total packaging line length (4650 mm) maintains +350 mm margin inside customer civil foundation bay limit (5000 mm).`,
           referencedEntities: [
-            { type: 'assembly', label: 'Main Assembly Mates', actionPath: '/main-assembly' },
-            { type: 'drawing', label: 'GA Drawing DRW-VLM-SKD-MAIN-A2', actionPath: '/review' },
+            { type: 'assembly', label: 'Main Assembly Spatial Mates', actionPath: '/main-assembly' },
+            { type: 'drawing', label: 'GA Drawing DRW-VLM-LINE-4000-A3', actionPath: '/review' },
           ],
           suggestedAction: {
-            label: 'Inspect Main Assembly Tree & Mates',
+            label: 'Inspect 5. Main Assembly',
             path: '/main-assembly',
           },
         };
@@ -176,48 +174,48 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Engineering Evaluation of Active Design Changes:\n\n` +
-            `• CHG-001 (InletDiameter 100 mm → 125 mm):\n` +
-            `  Hydraulic Duty: Q = 65 m³/h (0.01806 m³/s).\n` +
-            `  Velocity in DN100 bore: v = 2.30 m/s (causes cavitation & turbulence).\n` +
-            `  Velocity in DN125 bore: v = 1.47 m/s (−36.1% reduction per HI 9.6.6 standards).\n` +
-            `  NPSHr improved from 3.8m to 2.6m (+1.2m safety margin).\n\n` +
-            `• CHG-002 (Material Upgrade Cast Iron GG25 → 316L SS):\n` +
-            `  Acid chemical dosing fluid attacks standard cast iron. AISI 316L (1.4404) provides PREN ≥ 23.5, fully certified against pitting.\n\n` +
-            `• CHG-003 (Skid Frame Channel Length 1200 mm → 1450 mm):\n` +
-            `  Upgrading drive motor from 11 kW to 15 kW (Frame 160M) requires 250 mm additional channel span to maintain 140 mm coupling spacer distance.\n\n` +
-            `• CHG-004 (Motor Pedestal Mounting Slot Offset +180 mm):\n` +
-            `  Shifts bolt slot pitch from 380 mm to 560 mm to ensure collinear shaft concentricity.`,
+          text: `Engineering Evaluation of Active Packaging Design Changes:\n\n` +
+            `• CHG-001 (Collector Chute Outlet Width 300 mm → 450 mm):\n` +
+            `  Packaging Rate: Target 60 Bags/min with 2.5kg produce charges.\n` +
+            `  Discharge Area: Expands from 0.0707 m² to 0.1590 m² (+125% area expansion, 2.25× capacity).\n` +
+            `  Funnel Angle: Steepened from 55° to 62° to overcome bulk friction (μ = 0.42), preventing produce bridging.\n\n` +
+            `• CHG-002 (Material Upgrade 304 SS → 316L SS Dimpled Finish):\n` +
+            `  Mandated by USDA / FDA 3-A sanitary guidelines for washdown food packaging. Dimpled electropolished finish (Ra < 0.4 µm) prevents wet produce adhesion.\n\n` +
+            `• CHG-003 (VFFS Sealing Jaw Carriage Stroke 400 mm → 600 mm):\n` +
+            `  Accommodates 2.5kg family-pack pillow pouches with 650 mm jaw clamp span. Servo clamp pressure 8.5 kN @ 210°C.\n\n` +
+            `• CHG-004 (Forming Collar Diameter Ø128 mm → Ø192 mm):\n` +
+            `  Provides required film tube cross-section for 600 mm lay-flat pouch format.`,
           referencedEntities: [
-            { type: 'change', label: 'CHG-001 (Inlet 125mm)', actionPath: '/cad-change' },
-            { type: 'change', label: 'CHG-003 (Skid Length)', actionPath: '/cad-change' },
+            { type: 'change', label: 'CHG-001 (Chute 450mm)', actionPath: '/cad-change' },
+            { type: 'change', label: 'CHG-003 (VFFS 600mm)', actionPath: '/cad-change' },
           ],
           suggestedAction: {
-            label: 'Open CAD Change Centre',
+            label: 'Open 4. CAD Change Centre',
             path: '/cad-change',
           },
         };
       }
       // 5. "Summarise the main assembly."
-      else if (q.includes('summar') || q.includes('main assembly') || q.includes('skid')) {
+      else if (q.includes('summar') || q.includes('main assembly') || q.includes('line') || q.includes('packaging')) {
         reply = {
           id: `msg-resp-${Date.now()}`,
           sender: 'assistant',
           timestamp: new Date().toISOString(),
-          text: `Main Assembly Summary Dossier — MAIN_PROCESS_SKID_ASSY.SLDASM (Rev A.2):\n\n` +
-            `• System Definition: Custom Chemical Transfer & Dosing Skid Unit.\n` +
+          text: `Master Assembly Summary Dossier — VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM (Rev A.3):\n\n` +
+            `• System Definition: Volm High-Speed Automated Produce Packaging & Weighing Line.\n` +
             `• Sub-Assemblies Coordinated: 10 Total (8 Standard Reuse + 2 Modified).\n` +
-            `• Total Mass: 568.1 kg (Steel Skid: 218kg, Motor: 142kg, Pump: 86.5kg, Auxiliaries: 121.6kg).\n` +
-            `• Overall Physical Envelope: 1720 mm (L) × 780 mm (W) × 1180 mm (H).\n` +
-            `• Civil Foundation Constraint: Passed (Customer limit: 1850 × 850 mm).\n` +
-            `• Mates & Alignment: 10/10 kinematic mates satisfied with 0.018 mm TIR shaft concentricity.\n` +
-            `• Design Validation Status: 100% Passed. Ready for engineering sign-off and downstream release.`,
+            `• Total Machine Mass: 1,480.0 kg.\n` +
+            `• Overall Physical Footprint: 4650 mm (L) × 1850 mm (W) × 3450 mm (H).\n` +
+            `• Plant Bay Constraint: Passed (Customer bay limit: 5000 mm × 2400 mm, +350 mm margin).\n` +
+            `• Mates & Alignment: 10/10 spatial product transfer mates satisfied with zero collisions.\n` +
+            `• Line Speed: Synchronized 60 Bags/min continuous produce portioning.\n` +
+            `• Design Validation Status: 100% Passed. Ready for engineering sign-off and manufacturing release.`,
           referencedEntities: [
-            { type: 'assembly', label: 'MAIN_PROCESS_SKID_ASSY.SLDASM', actionPath: '/main-assembly' },
-            { type: 'drawing', label: 'General Arrangement Drawing', actionPath: '/review' },
+            { type: 'assembly', label: 'VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM', actionPath: '/main-assembly' },
+            { type: 'drawing', label: 'Line GA Drawing DRW-VLM-LINE-4000-A3', actionPath: '/review' },
           ],
           suggestedAction: {
-            label: 'View 3D Main Assembly Workspace',
+            label: 'View 5. Main Assembly',
             path: '/main-assembly',
           },
         };
@@ -229,18 +227,18 @@ export function EngineeringChatDrawer({ isOpen, onClose }: { isOpen: boolean; on
           sender: 'assistant',
           timestamp: new Date().toISOString(),
           text: `Engineering Copilot evaluated query: "${textToSend}"\n\n` +
-            `Cross-referenced active project ${enquiry?.reference}, 10 equipment assemblies, and CAD models:\n` +
+            `Cross-referenced active project ${enquiry?.reference}, 10 packaging equipment assemblies, and CAD models:\n` +
             `• Scope: 10 Assemblies (8 Standard Reuse, 2 Modified)\n` +
-            `• Pump Model: PUMP_UNIT_STD_A.SLDASM (Modified DN125)\n` +
-            `• Skid Model: SKID_BASE_FRAME_HEAVY.SLDASM (Modified 1450mm)\n` +
-            `• Main Assembly: MAIN_PROCESS_SKID_ASSY.SLDASM (Rev A.2)\n\n` +
+            `• Weigher Model: VOLM_MULTIHEAD_WEIGHER_14H.SLDASM (Modified 450mm Chute)\n` +
+            `• Bagger Model: VOLM_VFFS_BAGGING_UNIT_600.SLDASM (Modified 600mm)\n` +
+            `• Main Assembly: VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM (Rev A.3)\n\n` +
             `Try clicking one of the practical prompt chips above for targeted technical evaluations.`,
           referencedEntities: [
-            { type: 'assembly', label: 'Main Assembly Workspace', actionPath: '/main-assembly' },
-            { type: 'part', label: 'CAD Change Centre', actionPath: '/cad-change' },
+            { type: 'assembly', label: '5. Main Assembly', actionPath: '/main-assembly' },
+            { type: 'part', label: '4. CAD Change Centre', actionPath: '/cad-change' },
           ],
           suggestedAction: {
-            label: 'Open Main Assembly Workspace',
+            label: 'Open 5. Main Assembly',
             path: '/main-assembly',
           },
         };

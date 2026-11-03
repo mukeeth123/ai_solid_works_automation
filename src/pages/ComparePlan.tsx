@@ -200,7 +200,10 @@ export default function ComparePlan() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-[12px] font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded">
+                <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+                  3. Reuse & Comparison
+                </span>
+                <span className="text-[12px] font-mono font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded">
                   {enquiry?.reference || 'ENQ-2025-0047'}
                 </span>
                 <h1 className="text-[14px] font-bold text-[#20272E]">
@@ -216,11 +219,14 @@ export default function ComparePlan() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="btn-secondary" onClick={() => navigate('/library')}>
-                <Layers size={13} /> Engineering Library
+              <button className="btn-secondary text-[11.5px]" onClick={() => navigate('/library')}>
+                ← 2. Engineering Library
               </button>
-              <button className="btn-primary" onClick={() => navigate('/main-assembly')}>
-                <Box size={13} /> Open Main Assembly Workspace
+              <button className="btn-primary text-[11.5px]" onClick={() => navigate('/cad-change')}>
+                <Settings2 size={13} /> Proceed to 4. CAD Change Centre →
+              </button>
+              <button className="btn-secondary text-[11.5px]" onClick={() => navigate('/main-assembly')}>
+                <Box size={13} /> 5. Main Assembly
               </button>
             </div>
           </div>
@@ -252,7 +258,7 @@ export default function ComparePlan() {
                 </div>
                 <div>
                   <div className="text-[12px] font-bold text-[#92400E]">Modification Candidates</div>
-                  <div className="text-[10.5px] text-[#64748B]">Pump Unit (DN125 inlet) & Skid Base (1450mm length)</div>
+                  <div className="text-[10.5px] text-[#64748B]">Multi-Head Weigher (450mm chute) & VFFS Bagging Unit (600mm jaw width)</div>
                 </div>
               </div>
 

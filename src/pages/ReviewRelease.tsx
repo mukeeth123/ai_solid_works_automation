@@ -162,16 +162,19 @@ export default function ReviewRelease() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded-sm">
+              <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+                6. Review & Release
+              </span>
+              <span className="text-[11px] font-mono font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded-sm">
                 {enquiry?.reference || 'ENQ-2025-0047'}
               </span>
               <span className="text-[13px] font-semibold text-[#20272E]">
-                Engineering Review, Validation & Release
+                Engineering Review, Validation & Release Package
               </span>
               <StatusBadge status={review?.releaseReadiness || 'pending_checks'} />
             </div>
             <p className="text-[12px] text-[#68737D] mt-0.5">
-              Source Assembly: <strong className="text-[#20272E]">{sourceAssembly?.fileName || 'PUMP_UNIT_STD_A.SLDASM'}</strong> · 
+              Source Assembly: <strong className="text-[#20272E]">{sourceAssembly?.fileName || 'VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM'}</strong> · 
               Changes Proposed: <strong className="text-[#20272E]">{review?.changesProposed ?? state.proposedChanges.length}</strong> · 
               Executed: <strong className="text-[#20272E]">{state.executions.filter(e => e.status === 'complete').length}</strong>
             </p>
@@ -179,16 +182,28 @@ export default function ReviewRelease() {
 
           <div className="flex items-center gap-2">
             <button
-              className="btn-secondary"
-              onClick={handleExportBOM}
+              className="btn-secondary text-[11.5px]"
+              onClick={() => navigate('/main-assembly')}
             >
-              <Download size={13} /> Export BOM CSV
+              ← 5. Main Assembly
             </button>
             <button
-              className="btn-primary"
+              className="btn-secondary text-[11.5px]"
+              onClick={handleExportBOM}
+            >
+              <Download size={12} /> Export BOM CSV
+            </button>
+            <button
+              className="btn-secondary text-[11.5px]"
               onClick={handleExportJSON}
             >
-              <FileText size={13} /> Export Review Summary JSON
+              <FileText size={12} /> Export JSON
+            </button>
+            <button
+              className="btn-primary text-[11.5px]"
+              onClick={() => navigate('/history')}
+            >
+              Proceed to 7. Activity History →
             </button>
           </div>
         </div>

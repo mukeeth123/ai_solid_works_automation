@@ -518,11 +518,14 @@ What specific design action or verification would you like to run?`,
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded-sm">
+              <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+                4. CAD Change Centre
+              </span>
+              <span className="text-[11px] font-mono font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded-sm">
                 {enquiry?.reference || 'ENQ-2025-0047'}
               </span>
               <span className="text-[13px] font-semibold text-[#20272E]">
-                CAD Execution Hub & Parametric Verification
+                Parametric Design Modifications & Verification
               </span>
               {selectedChange && (
                 <span className="text-[11px] font-mono text-[#68737D] border border-[#DDE2E6] px-1.5 py-0.5 rounded">
@@ -534,7 +537,7 @@ What specific design action or verification would you like to run?`,
               )}
             </div>
             <p className="text-[12px] text-[#68737D] mt-0.5">
-              Target CAD Model: <strong className="text-[#20272E]">{targetFile?.fileName || 'PUMP_CASING_STD_A.SLDPRT'}</strong> · Active Configuration: <strong className="text-[#20272E]">{selectedChange?.targetConfiguration || targetFile?.activeConfiguration || 'DN125'}</strong>
+              Target CAD Model: <strong className="text-[#20272E]">{targetFile?.fileName || 'WEIGHER_DISCHARGE_CHUTE_450.SLDPRT'}</strong> · Active Configuration: <strong className="text-[#20272E]">{selectedChange?.targetConfiguration || targetFile?.activeConfiguration || 'Width_450mm'}</strong>
             </p>
           </div>
 
@@ -564,25 +567,25 @@ What specific design action or verification would you like to run?`,
               title="Inspect VOLM Desktop CAD Integration Architecture"
             >
               <Cpu size={13} className="text-[#315D78]" />
-              SOLIDWORKS Connector Bridge
+              SOLIDWORKS Connector
             </button>
             <button
-              className="btn-secondary"
+              className="btn-secondary text-[11.5px]"
               onClick={() => navigate('/compare')}
             >
-              <RotateCcw size={13} /> Back to Planner
+              <RotateCcw size={13} /> ← 3. Reuse & Comparison
             </button>
             <button
-              className="btn-primary bg-[#315D78] hover:bg-[#254B62] text-white flex items-center gap-1.5"
+              className="btn-primary bg-[#315D78] hover:bg-[#254B62] text-white flex items-center gap-1.5 text-[11.5px]"
               onClick={() => navigate('/main-assembly')}
             >
-              <Box size={13} /> Main Assembly Integration →
+              <Box size={13} /> Proceed to 5. Main Assembly →
             </button>
             <button
-              className="btn-secondary"
+              className="btn-secondary text-[11.5px]"
               onClick={() => navigate('/review')}
             >
-              <CheckSquare size={13} /> Review & Release
+              <CheckSquare size={13} /> 6. Review & Release
             </button>
           </div>
         </div>

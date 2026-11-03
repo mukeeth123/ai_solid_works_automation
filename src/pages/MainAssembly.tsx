@@ -125,6 +125,9 @@ export default function MainAssembly() {
           </div>
           <div>
             <div className="flex items-center gap-2.5">
+              <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+                5. Main Assembly
+              </span>
               <h1 className="text-[15px] font-bold text-[#20272E] tracking-tight">
                 Main Assembly Workspace — VOLM_AUTOMATED_PACKAGING_LINE_MAIN.SLDASM
               </h1>
@@ -153,7 +156,14 @@ export default function MainAssembly() {
         </div>
 
         {/* Global Assembly Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/cad-change')}
+            className="btn-secondary py-1.5 px-3 text-[12px] flex items-center gap-1.5"
+          >
+            ← 4. CAD Change Centre
+          </button>
+
           <button
             onClick={handleRunValidation}
             disabled={isSolving}
@@ -167,7 +177,7 @@ export default function MainAssembly() {
             onClick={() => navigate('/review')}
             className="eng-btn bg-[#315D78] text-white hover:bg-[#254B62] flex items-center gap-1.5 py-1.5 px-3 text-[12px] font-semibold rounded shadow-sm transition-colors"
           >
-            <span>Proceed to Review & Release</span>
+            <span>Proceed to 6. Review & Release</span>
             <ArrowRight size={13} />
           </button>
         </div>

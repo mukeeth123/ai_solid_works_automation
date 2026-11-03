@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   History, Search, Filter, Download, User,
   FileText, Clock, ChevronRight, Activity, X
@@ -11,6 +12,7 @@ import {
 } from '../components/shared';
 
 export default function ActivityHistory() {
+  const navigate = useNavigate();
   const { state } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEntityType, setSelectedEntityType] = useState('all');
@@ -89,7 +91,10 @@ export default function ActivityHistory() {
       {/* Top Header */}
       <div className="bg-white border-b border-[#DDE2E6] px-5 py-3 flex-shrink-0">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+              7. Activity History
+            </span>
             <History size={16} className="text-[#315D78]" />
             <h1 className="text-[14px] font-semibold text-[#20272E]">
               Traceability & Activity Audit Trail
@@ -99,12 +104,20 @@ export default function ActivityHistory() {
             </span>
           </div>
 
-          <button
-            className="btn-secondary"
-            onClick={handleExportAuditCSV}
-          >
-            <Download size={13} /> Export Audit Log (.CSV)
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="btn-secondary text-[11.5px]"
+              onClick={() => navigate('/review')}
+            >
+              ← 6. Review & Release
+            </button>
+            <button
+              className="btn-secondary text-[11.5px]"
+              onClick={handleExportAuditCSV}
+            >
+              <Download size={13} /> Export Audit Log (.CSV)
+            </button>
+          </div>
         </div>
       </div>
 

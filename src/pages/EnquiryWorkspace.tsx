@@ -402,7 +402,10 @@ export default function EnquiryWorkspace() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded-sm">
+                <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+                  1. Requirements Brief
+                </span>
+                <span className="text-[11px] font-mono font-bold text-[#315D78] bg-[#EBF2F7] px-2 py-0.5 rounded-sm">
                   {enquiry.reference}
                 </span>
                 <StatusBadge status={enquiry.status} />
@@ -457,7 +460,7 @@ export default function EnquiryWorkspace() {
               </button>
 
               <button className="btn-primary" onClick={handleContinue}>
-                Continue to Library <ArrowRight size={13} />
+                Proceed to 2. Engineering Library <ArrowRight size={13} />
               </button>
             </div>
           </div>

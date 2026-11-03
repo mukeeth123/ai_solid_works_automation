@@ -161,25 +161,39 @@ export default function EngineeringLibrary() {
       {/* Centre Pane */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Toolbar */}
-        <div className="bg-white border-b border-[#DDE2E6] px-3 py-2 flex items-center gap-3 flex-shrink-0">
-          <div className="flex rounded border border-[#DDE2E6] overflow-hidden">
-            {(['list', 'tree'] as const).map(mode => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={cn('px-3 py-1.5 text-[11.5px] font-medium flex items-center gap-1.5',
-                  viewMode === mode ? 'bg-[#315D78] text-white' : 'bg-white text-[#68737D] hover:bg-[#F4F5F6]')}
-              >
-                {mode === 'list' ? <><Filter size={11} /> List</> : <><Layers size={11} /> Assembly Tree</>}
-              </button>
-            ))}
+        <div className="bg-white border-b border-[#DDE2E6] px-3 py-2 flex items-center gap-3 flex-shrink-0 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-white bg-[#315D78] px-2 py-0.5 rounded-sm">
+              2. Engineering Library
+            </span>
+            <div className="flex rounded border border-[#DDE2E6] overflow-hidden">
+              {(['list', 'tree'] as const).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={cn('px-3 py-1 text-[11.5px] font-medium flex items-center gap-1.5',
+                    viewMode === mode ? 'bg-[#315D78] text-white' : 'bg-white text-[#68737D] hover:bg-[#F4F5F6]')}
+                >
+                  {mode === 'list' ? <><Filter size={11} /> List</> : <><Layers size={11} /> Assembly Tree</>}
+                </button>
+              ))}
+            </div>
+            <span className="text-[12px] text-[#68737D]">{filtered.length} files</span>
           </div>
-          <span className="text-[12px] text-[#68737D]">{filtered.length} file{filtered.length !== 1 ? 's' : ''}</span>
-          {selectedFileId && (
-            <button className="btn-primary ml-auto" onClick={handleCompare} disabled={!enquiry}>
-              <ArrowRightLeft size={13} /> Compare with Enquiry
+
+          <div className="flex items-center gap-2 ml-auto">
+            <button className="btn-secondary text-[11.5px]" onClick={() => navigate('/enquiries')}>
+              ← 1. Requirements Brief
             </button>
-          )}
+            {selectedFileId && (
+              <button className="btn-secondary text-[11.5px]" onClick={handleCompare} disabled={!enquiry}>
+                <ArrowRightLeft size={12} /> Compare Selected
+              </button>
+            )}
+            <button className="btn-primary text-[11.5px]" onClick={() => navigate('/compare')}>
+              Proceed to 3. Reuse & Comparison →
+            </button>
+          </div>
         </div>
 
         {/* File List */}
