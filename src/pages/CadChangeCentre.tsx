@@ -1331,9 +1331,8 @@ What specific design action or verification would you like to run?`,
             <div className="space-y-2">
               {[
                 { id: 'mock', name: 'Mock CAD Adapter', desc: 'Deterministic local simulation. Verified demo safety.', live: true },
-                { id: 'solidworks', name: 'SOLIDWORKS API Connector', desc: 'Requires native Windows background service.', live: false },
-                { id: 'cadabra', name: 'CADABRA Kernel Adapter', desc: 'Enterprise CAD service integration boundary.', live: false },
-                { id: 'forge', name: 'Autodesk Forge / APS', desc: 'Cloud model derivative translation boundary.', live: false },
+                { id: 'solidworks', name: 'SOLIDWORKS API Integration', desc: 'Requires native Windows background service.', live: false },
+                { id: 'cadabra', name: 'AI Engineering Agents', desc: 'Autonomous CAD execution agents for parametric design changes and validation.', live: false },
               ].map(item => {
                 const isSel = selectedAdapter === item.id;
                 return (

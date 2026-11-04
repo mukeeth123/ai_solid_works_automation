@@ -37,17 +37,17 @@ export const DEMO_DATA_SOURCES: DataSource[] = [
   },
   {
     id: 'ds-002',
-    name: 'SOLIDWORKS Connector (Desktop)',
+    name: 'SOLIDWORKS API Integration',
     type: 'solidworks_connector',
     status: 'inactive',
     description: 'Windows desktop connector for live SOLIDWORKS COM API. Not active in demo mode.',
   },
   {
     id: 'ds-003',
-    name: 'Autodesk Platform Services (Forge)',
-    type: 'forge',
+    name: 'AI Engineering Agents',
+    type: 'cadabra',
     status: 'inactive',
-    description: 'Cloud design automation boundary for remote translation. Not active.',
+    description: 'Autonomous CAD execution agents for parametric design changes. Not active in demo mode.',
   },
 ];
 
@@ -70,24 +70,17 @@ export const DEMO_INTEGRATIONS: IntegrationStatus[] = [
   },
   {
     adapter: 'solidworks',
-    name: 'SOLIDWORKS Native COM Automation',
+    name: 'SOLIDWORKS API Integration',
     connected: false,
     capabilities: [],
-    notes: 'Requires Windows desktop SOLIDWORKS connector to be active. Simulated in demo mode.',
+    notes: 'Direct native SOLIDWORKS COM API integration. Requires Windows background service.',
   },
   {
     adapter: 'cadabra',
-    name: 'Packaging Geometry Solver',
+    name: 'AI Engineering Agents',
     connected: false,
     capabilities: [],
-    notes: 'Optional geometry automation service boundary. Not connected.',
-  },
-  {
-    adapter: 'forge',
-    name: 'Autodesk Platform Services (Forge)',
-    connected: false,
-    capabilities: [],
-    notes: 'Remote API connector for cloud viewing and batch translations. Not connected.',
+    notes: 'Autonomous CAD execution agents for parametric design changes and validation.',
   },
 ];
 

@@ -233,7 +233,7 @@ export class MockCadAdapter implements CADAdapter {
 
 export class SolidWorksApiAdapter implements CADAdapter {
   adapterType = 'solidworks';
-  adapterName = 'SOLIDWORKS Native API';
+  adapterName = 'SOLIDWORKS API Integration';
 
   getCapabilities(): CADAdapterCapabilities {
     return {
@@ -273,11 +273,11 @@ export class SolidWorksApiAdapter implements CADAdapter {
   async getDocumentReference(): Promise<string> { this.notImplemented(); }
 }
 
-// ---- CADABRA Adapter (interface boundary — not implemented) ----
+// ---- AI Engineering Agents Adapter (interface boundary — not implemented) ----
 
 export class CadabraAdapter implements CADAdapter {
   adapterType = 'cadabra';
-  adapterName = 'CADABRA';
+  adapterName = 'AI Engineering Agents';
 
   getCapabilities(): CADAdapterCapabilities {
     return {
@@ -288,7 +288,7 @@ export class CadabraAdapter implements CADAdapter {
       canInspectFeatures: false,
       canInspectConfigurations: false,
       requiresNativeInstall: true,
-      platformRequirements: ['CADABRA service endpoint', 'Authorised API credentials'],
+      platformRequirements: ['Agent orchestration endpoint', 'Autonomous task pipeline'],
     };
   }
 
@@ -298,12 +298,12 @@ export class CadabraAdapter implements CADAdapter {
       name: this.adapterName,
       connected: false,
       capabilities: [],
-      notes: 'Integration boundary defined. Verified CADABRA capabilities to be confirmed. Not yet implemented or tested.',
+      notes: 'Autonomous CAD execution agents for parametric design changes and validation.',
     };
   }
 
   private notImplemented(): never {
-    throw new Error('CADABRA integration is not implemented. This integration boundary is defined but not yet active.');
+    throw new Error('AI Engineering Agents integration is not active. This integration boundary is defined but not yet connected.');
   }
 
   async inspectDocument(): Promise<EngineeringFile> { this.notImplemented(); }

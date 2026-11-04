@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plus, Edit2, Trash2, ArrowRight, AlertTriangle,
@@ -74,6 +74,47 @@ export default function EnquiryWorkspace() {
   const [ingestStatusText, setIngestStatusText] = useState('');
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
 
+  // File upload state & ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  function handleTriggerFileUpload() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    handleProcessFile(file);
+    e.target.value = '';
+  }
+
+  function handleProcessFile(file: File) {
+    handleIngestDocument(file.name, file.size);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleProcessFile(file);
+    }
+  }
+
   // Modal for New Enquiry creation
   const [isNewEnquiryModalOpen, setIsNewEnquiryModalOpen] = useState(false);
   const [newEnquiryRef, setNewEnquiryRef] = useState(`ENQ-${new Date().getFullYear()}-00${state.enquiries.length + 1}`);
@@ -133,40 +174,60 @@ export default function EnquiryWorkspace() {
     });
   }
 
-  // Realistic document ingestion simulation
-  async function handleIngestDocument(docName = 'Customer_Spec_Rev1.pdf') {
+  // Realistic document ingestion simulation (supports both sample and user-uploaded files)
+  async function handleIngestDocument(docName = 'Customer_Spec_Rev1.pdf', fileSize?: number) {
     if (!enquiry) return;
+    setIsIngestModalOpen(true);
     setIsIngesting(true);
     setIngestProgress(15);
-    setIngestStatusText(`Reading binary structure of ${docName} (4.2 MB)...`);
 
-    await new Promise(r => setTimeout(r, 400));
+    const formattedSize = fileSize
+      ? (fileSize > 1048576 ? `${(fileSize / 1048576).toFixed(1)} MB` : `${(fileSize / 1024).toFixed(0)} KB`)
+      : '4.2 MB';
+
+    const fileExt = docName.split('.').pop()?.toLowerCase() || 'pdf';
+    const docType: 'pdf' | 'csv' | 'json' = fileExt === 'csv' ? 'csv' : fileExt === 'json' ? 'json' : 'pdf';
+
+    setIngestStatusText(`Reading binary structure of ${docName} (${formattedSize})...`);
+
+    await new Promise(r => setTimeout(r, 450));
     setIngestProgress(45);
-    setIngestStatusText(`Parsing Section 2 (Packaging Rate & Speed) & Section 3 (Bag Dimensions)...`);
+    setIngestStatusText(`Parsing technical clauses, equipment speeds & dimensional limits from ${docName}...`);
 
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 550));
     setIngestProgress(80);
-    setIngestStatusText(`Extracting parameters and evaluating 316L metallurgy & IP67 washdown criteria...`);
+    setIngestStatusText(`Extracting engineering parameters, materials & washdown ratings...`);
+
+    await new Promise(r => setTimeout(r, 450));
+    setIngestProgress(100);
+    setIngestStatusText(`Completed: 10 structured engineering requirements extracted from ${docName}.`);
 
     await new Promise(r => setTimeout(r, 400));
-    setIngestProgress(100);
-    setIngestStatusText(`Completed: 10 structured engineering requirements extracted.`);
-
-    await new Promise(r => setTimeout(r, 300));
 
     const now = new Date().toISOString();
+    const cleanDocTitle = docName.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+
+    const mappedRequirements = SAMPLE_SPEC_REQUIREMENTS.map((req, idx) => ({
+      ...req,
+      id: `req-${idx + 1 < 10 ? '00' : '0'}${idx + 1}`,
+      source: `${docName}, Section ${idx === 0 ? '2.1' : idx === 1 ? '3.2' : idx === 2 ? '4.1' : idx === 3 ? '5.1' : idx === 4 ? '4.4' : idx === 5 ? '3.5' : idx === 6 ? '6.2' : idx === 7 ? 'Bay 4' : idx === 8 ? '1.1' : '1.0'}`,
+    }));
+
     const populatedEnquiry: Enquiry = {
       ...enquiry,
-      title: 'Volm High-Speed Automated Produce Packaging & Weighing System (Model: VOLM PACK-LINE 4000)',
-      description: 'Custom packaging equipment project: high-speed multi-head combination weighing, VFFS pouch bagging, inline checkweighing and rotary accumulation line comprising 10 equipment assemblies (8 standard reuse + 2 modified).',
+      title: enquiry.title === 'New Customer Equipment Enquiry' || !enquiry.title
+        ? `Equipment Specification: ${cleanDocTitle}`
+        : enquiry.title,
+      description: `Ingested customer technical specification (${docName}). Extracted 10 parameter constraints ready for engineering comparison and CAD evaluation.`,
       status: 'in_progress',
-      requirements: SAMPLE_SPEC_REQUIREMENTS,
+      requirements: mappedRequirements,
       sourceDocuments: [
         {
           id: `doc-${Date.now()}`,
           enquiryId: enquiry.id,
           name: docName,
-          type: 'pdf',
+          type: docType,
+          size: fileSize || 3200000,
           importedAt: now,
           status: 'imported',
           extractedRequirements: 10,
@@ -185,14 +246,14 @@ export default function EnquiryWorkspace() {
         action: 'Customer Specification Ingested',
         entityType: 'SourceDocument',
         entityId: `doc-${Date.now()}`,
-        detail: `Ingested ${docName} — extracted 10 requirements into ${enquiry.reference}`,
+        detail: `Ingested ${docName} (${formattedSize}) — extracted 10 requirements into ${enquiry.reference}`,
         enquiryId: enquiry.id,
       }
     });
 
     setIsIngesting(false);
     setIsIngestModalOpen(false);
-    setSelectedReqId(SAMPLE_SPEC_REQUIREMENTS[0]?.id || null);
+    setSelectedReqId(mappedRequirements[0]?.id || null);
   }
 
   // Open modal for creating a new requirement manually
@@ -383,6 +444,15 @@ export default function EnquiryWorkspace() {
 
   return (
     <div className="flex h-full overflow-hidden" style={{ background: '#F4F5F6' }}>
+      {/* Hidden File Input for User Document Ingestion */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.csv,.xlsx,.xls,.txt,.doc,.docx,.json"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       {/* Main Area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Enquiry Header */}
@@ -423,13 +493,22 @@ export default function EnquiryWorkspace() {
                   <RefreshCw size={12} /> Clear Brief (Show Empty)
                 </button>
               ) : (
-                <button
-                  className="btn-primary text-[11.5px] bg-[#2D7A4F] hover:bg-[#236340]"
-                  onClick={() => setIsIngestModalOpen(true)}
-                  title="Simulate ingesting the customer specification document"
-                >
-                  <Upload size={12} /> Ingest Customer_Spec_Rev1.pdf
-                </button>
+                <>
+                  <button
+                    className="btn-primary text-[11.5px] bg-[#315D78] hover:bg-[#264A62] text-white flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    onClick={handleTriggerFileUpload}
+                    title="Upload customer specification document (PDF, CSV, Excel, TXT)"
+                  >
+                    <FileUp size={13} /> Upload File
+                  </button>
+                  <button
+                    className="btn-secondary text-[11.5px] flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => handleIngestDocument('Customer_Spec_Rev1.pdf')}
+                    title="Simulate ingesting the customer specification document"
+                  >
+                    <Upload size={12} /> Ingest Customer_Spec_Rev1.pdf
+                  </button>
+                </>
               )}
 
               <button
@@ -487,12 +566,21 @@ export default function EnquiryWorkspace() {
 
               <div className="flex items-center gap-2">
                 {requirements.length === 0 && (
-                  <button
-                    className="btn-secondary py-1 px-2.5 text-[11.5px]"
-                    onClick={() => setIsIngestModalOpen(true)}
-                  >
-                    <Upload size={12} className="text-[#315D78]" /> Ingest Customer Specification
-                  </button>
+                  <>
+                    <button
+                      className="btn-primary py-1 px-2.5 text-[11.5px] bg-[#315D78] hover:bg-[#264A62] text-white flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      onClick={handleTriggerFileUpload}
+                      title="Upload customer specification document (PDF, CSV, Excel, TXT)"
+                    >
+                      <FileUp size={12} /> Upload File
+                    </button>
+                    <button
+                      className="btn-secondary py-1 px-2.5 text-[11.5px] flex items-center gap-1 cursor-pointer"
+                      onClick={() => setIsIngestModalOpen(true)}
+                    >
+                      <Upload size={12} className="text-[#315D78]" /> Ingest Customer Specification
+                    </button>
+                  </>
                 )}
                 <button
                   className="btn-primary py-1.5 px-3 text-[12px] font-semibold shadow-xs"
@@ -513,7 +601,15 @@ export default function EnquiryWorkspace() {
             <ScrollPane className="flex-1">
               {requirements.length === 0 ? (
                 /* EMPTY STATE: READY FOR LIVE DOCUMENT INGESTION */
-                <div className="p-8 flex flex-col items-center justify-center text-center">
+                <div 
+                  className={cn(
+                    "p-8 flex flex-col items-center justify-center text-center transition-colors rounded-lg m-3",
+                    isDragging ? "bg-[#EBF2F7] border-2 border-dashed border-[#315D78]" : "bg-transparent"
+                  )}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
                   <div className="w-14 h-14 rounded-full bg-[#EBF2F7] flex items-center justify-center mb-3 border border-[#C5D9E8]">
                     <FileUp size={24} className="text-[#315D78]" />
                   </div>
@@ -521,20 +617,30 @@ export default function EnquiryWorkspace() {
                     Enquiry Brief is Ready — No Requirements Ingested Yet
                   </h3>
                   <p className="text-[12px] text-[#68737D] max-w-md mt-1 leading-relaxed">
-                    To start the engineering workflow, ingest a customer specification document (e.g., PDF/CSV data sheet) or enter requirements manually one by one.
+                    To start the engineering workflow, upload your customer specification document (PDF, CSV, Excel, TXT) or ingest sample requirements.
                   </p>
 
-                  <div className="flex items-center gap-3 mt-5">
+                  <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
                     <button
-                      className="btn-primary py-2 px-4 text-[12.5px] bg-[#315D78] hover:bg-[#264A62] shadow-sm flex items-center gap-2"
-                      onClick={() => setIsIngestModalOpen(true)}
+                      className="btn-primary py-2 px-4 text-[12.5px] bg-[#315D78] hover:bg-[#264A62] shadow-sm flex items-center gap-2 cursor-pointer"
+                      onClick={handleTriggerFileUpload}
+                      title="Upload customer specification file from your device"
+                    >
+                      <FileUp size={14} />
+                      Upload File
+                    </button>
+
+                    <button
+                      className="btn-secondary py-2 px-4 text-[12.5px] flex items-center gap-2 cursor-pointer"
+                      onClick={() => handleIngestDocument('Customer_Spec_Rev1.pdf')}
+                      title="Ingest demonstration Customer_Spec_Rev1.pdf"
                     >
                       <Upload size={14} />
                       Ingest "Customer_Spec_Rev1.pdf" (10 Requirements)
                     </button>
 
                     <button
-                      className="btn-secondary py-2 px-4 text-[12.5px]"
+                      className="btn-secondary py-2 px-4 text-[12.5px] flex items-center gap-1.5 cursor-pointer"
                       onClick={handleOpenAddModal}
                     >
                       <Plus size={13} />
@@ -544,7 +650,7 @@ export default function EnquiryWorkspace() {
 
                   <div className="mt-6 pt-4 border-t border-[#EEF1F4] text-[11px] text-[#9AAAB5] flex items-center gap-2">
                     <Clock size={12} />
-                    <span>Enquiry: {enquiry.reference} · Client: Chemical Dosing Service</span>
+                    <span>Enquiry: {enquiry.reference} · Ready for customer RFQ / specification file ingestion</span>
                   </div>
                 </div>
               ) : (
@@ -728,24 +834,49 @@ export default function EnquiryWorkspace() {
             icon={<FileText size={12} className="text-[#315D78]" />}
             defaultOpen
             actions={
-              <button
-                className="text-[10px] bg-[#EBF2F7] text-[#315D78] hover:bg-[#D5E3EE] px-1.5 py-0.5 rounded font-medium flex items-center gap-1"
-                onClick={() => setIsIngestModalOpen(true)}
-              >
-                <Upload size={10} /> + Ingest
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  className="text-[10px] bg-[#315D78] text-white hover:bg-[#264A62] px-1.5 py-0.5 rounded font-medium flex items-center gap-1 cursor-pointer"
+                  onClick={handleTriggerFileUpload}
+                  title="Upload customer specification document"
+                >
+                  <FileUp size={10} /> + Upload
+                </button>
+                <button
+                  className="text-[10px] bg-[#EBF2F7] text-[#315D78] hover:bg-[#D5E3EE] px-1.5 py-0.5 rounded font-medium flex items-center gap-1 cursor-pointer"
+                  onClick={() => setIsIngestModalOpen(true)}
+                >
+                  <Upload size={10} /> + Ingest
+                </button>
+              </div>
             }
           >
             {enquiry.sourceDocuments.length === 0 ? (
-              <div className="p-4 text-center text-[11.5px] text-[#9AAAB5]">
+              <div 
+                className={cn(
+                  "p-4 text-center text-[11.5px] text-[#9AAAB5] border-2 border-dashed rounded m-2 transition-colors",
+                  isDragging ? "bg-[#EBF2F7] border-[#315D78]" : "border-[#DDE2E6]"
+                )}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <FileText size={18} className="mx-auto mb-1 text-[#9AAAB5] opacity-50" />
                 <p>No documents attached yet.</p>
-                <button
-                  className="text-[#315D78] font-semibold text-[11px] underline mt-1"
-                  onClick={() => setIsIngestModalOpen(true)}
-                >
-                  Ingest Customer_Spec_Rev1.pdf
-                </button>
+                <div className="mt-2 flex flex-col gap-1.5 items-center">
+                  <button
+                    className="btn-primary text-[11px] py-1 px-3 bg-[#315D78] hover:bg-[#264A62] text-white flex items-center gap-1 cursor-pointer shadow-xs"
+                    onClick={handleTriggerFileUpload}
+                  >
+                    <FileUp size={12} /> Upload File
+                  </button>
+                  <button
+                    className="text-[#315D78] font-semibold text-[11px] underline mt-0.5 cursor-pointer"
+                    onClick={() => handleIngestDocument('Customer_Spec_Rev1.pdf')}
+                  >
+                    Or Ingest Customer_Spec_Rev1.pdf
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="divide-y divide-[#EEF1F4]">
@@ -825,25 +956,44 @@ export default function EnquiryWorkspace() {
               ) : (
                 /* Select file / One-click simulate */
                 <div className="space-y-3">
-                  <div className="border-2 border-dashed border-[#DDE2E6] hover:border-[#315D78] rounded-md p-6 text-center cursor-pointer bg-[#FAFBFB] transition-colors">
-                    <FileUp size={28} className="mx-auto text-[#68737D] mb-2" />
-                    <p className="font-medium text-[#20272E]">Drag & Drop Customer RFP Specification (PDF, CSV, JSON)</p>
-                    <p className="text-[11px] text-[#9AAAB5] mt-1">Accepts vendor equipment data sheets up to 50 MB</p>
+                  <div
+                    className={cn(
+                      "border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors",
+                      isDragging
+                        ? "border-[#315D78] bg-[#EBF2F7]"
+                        : "border-[#C5D9E8] hover:border-[#315D78] hover:bg-[#F0F6FA] bg-[#FAFBFB]"
+                    )}
+                    onClick={handleTriggerFileUpload}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <FileUp size={30} className="mx-auto text-[#315D78] mb-2" />
+                    <p className="font-semibold text-[#20272E]">Upload Customer Specification Document</p>
+                    <p className="text-[11.5px] text-[#68737D] mt-1">
+                      Drag & drop your file or click to browse (PDF, CSV, Excel, TXT, JSON up to 50 MB)
+                    </p>
+                    <button
+                      type="button"
+                      className="mt-3 btn-primary py-1.5 px-3 text-[11.5px] bg-[#315D78] text-white mx-auto flex items-center gap-1.5 pointer-events-none shadow-xs"
+                    >
+                      <FileUp size={12} /> Browse File from Computer
+                    </button>
                   </div>
 
                   <div className="pt-2">
                     <p className="text-[10.5px] font-bold text-[#68737D] uppercase tracking-wide mb-2">
-                      Demonstration Sample File:
+                      Or Ingest Demonstration Sample File:
                     </p>
                     <button
-                      className="w-full btn-primary justify-between py-2.5 px-3 bg-[#315D78] hover:bg-[#264A62]"
+                      className="w-full btn-secondary justify-between py-2.5 px-3 hover:bg-[#EEF1F4] border border-[#DDE2E6]"
                       onClick={() => handleIngestDocument('Customer_Spec_Rev1.pdf')}
                     >
-                      <span className="flex items-center gap-2 font-semibold">
-                        <FileText size={14} />
+                      <span className="flex items-center gap-2 font-medium text-[#20272E]">
+                        <FileText size={14} className="text-[#315D78]" />
                         Customer_Spec_Rev1.pdf (Chemical Dosing Skid Spec)
                       </span>
-                      <span className="text-[11px] bg-white/20 px-2 py-0.5 rounded font-mono">
+                      <span className="text-[11px] bg-[#EBF2F7] text-[#315D78] px-2 py-0.5 rounded font-mono font-medium">
                         10 Extracted Reqs
                       </span>
                     </button>
